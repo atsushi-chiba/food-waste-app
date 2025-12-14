@@ -1,4 +1,12 @@
-# データベースファイルは除外
+/.venv/
+__pycache__/
+*.pyc
+db/*.db
+.pytest_cache/
+/.mypy_cache/
+/.vscode/
+.env
+venv/# データベースファイルは除外
 db/
 .venv/
 __pycache__/
