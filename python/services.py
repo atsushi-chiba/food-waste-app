@@ -2,147 +2,44 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from models import User, FoodLossRecord, LossReason
 from schemas import LossRecordInput
-import hashlib 
-import datetime
-from datetime import timedelta
-from typing import Dict, Any, List, Optional, Tuple 
-# from statistics import ... # NOTE: 統計関数を全てこのファイル内に持つため、このインポートは不要になる
+import hashlib
+from datetime import datetime, timedelta, date, time
+from typing import Dict, Any, List, Optional, Tuple
+from statistics import (
+    get_week_boundaries,
+    get_total_grams_for_week,
+    get_total_grams_for_weeks,
+    # target_date.weekday() は月曜(0)から日曜(6)
 
-# ★ get_week_boundaries は services.py のどこかに定義されている必要があります ★
-def get_week_boundaries(today: datetime.datetime) -> Tuple[datetime.datetime, datetime.datetime]:
+def get_start_and_end_of_week(target_date: date) -> Tuple[date, date]:
+    """与えられた日付を含む週の日曜と土曜を返す (日曜日を週の始まりとする)。"""
+    start_of_week = target_date - timedelta(days=(target_date.weekday() + 1) % 7)
+    end_of_week = start_of_week + timedelta(days=6)
+    return start_of_week, end_of_week
+
+
+def get_weekly_stats(db: Session, user_id: int, target_date: date) -> Dict[str, Any]:
     """
-    指定された日付を含む「月曜日から日曜日まで」の一週間の境界を計算する。
+    指定された日付を含む週の統計データ（グラフ用、表用）を取得し、JSが期待する形式に整形する。
     """
-    days_to_monday = today.weekday() 
-    start_of_week = today - timedelta(days=days_to_monday)
-    monday = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
-    sunday = monday + timedelta(days=6)
-    end_of_week = sunday.replace(hour=23, minute=59, second=59, microsecond=999999)
-    return monday, end_of_week
-# ----------------------------------------------------
+    # target_dateから週の始まりと終わり（日曜〜土曜）を計算
+    date_start_of_week, date_end_of_week = get_start_and_end_of_week(target_date)
 
+    # 1. データベースクエリ用のISO文字列境界を作成
+    datetime_start = datetime.combine(date_start_of_week, time.min)
+    datetime_end = datetime.combine(date_end_of_week, time.max)
+    start_str = datetime_start.isoformat()
+    end_str = datetime_end.isoformat()
 
-def register_new_user(db: Session, username: str, email: str, password: str) -> int:
-    """
-    新しいユーザーをデータベースに登録する。
-    """
-    # ユーザー名とメールアドレスの重複チェック
-    if db.query(User).filter((User.username == username) | (User.email == email)).first():
-        raise ValueError("ユーザー名またはメールアドレスは既に登録されています。")
-    
-    # パスワードをハッシュ化
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()
-    
-    new_user = User(
-        username=username,
-        email=email,
-        password=hashed_password,
-        total_points=0
-    )
-    
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    
-    return new_user.id
-
-def get_user_by_username(db: Session, username: str) -> User | None:
-    """ユーザー名でユーザーオブジェクトを取得する。"""
-    return db.query(User).filter_by(username=username).first()
-
-def get_user_by_id(db: Session, user_id: int) -> User | None:
-    """IDでユーザーオブジェクトを取得する。"""
-    return db.query(User).get(user_id)
-
-# NOTE: add_new_loss_record 関数は add_new_loss_record_direct と重複しているため、削除または統合することが望ましいですが、ここでは残します。
-def add_new_loss_record(db: Session, record_data: Dict[str, Any]) -> int:
-    # ... (既存のロジックを維持) ...
-    # 既存のロジックは add_new_loss_record_direct と同様なので割愛
-    pass 
-
-# ----------------------------------------------------
-# ★ 修正: DB集計ヘルパー関数 (NoneType対策) ★
-# ----------------------------------------------------
-
-def get_total_grams_for_week(db: Session, user_id: int, start_date: datetime.datetime, end_date: datetime.datetime) -> float:
-    """
-    指定された期間の一週間の合計廃棄重量を取得する。（ポイント計算用）
-    """
-    start_str = start_date.isoformat()
-    end_str = end_date.isoformat()
-    
-    total_grams = db.query(func.sum(FoodLossRecord.weight_grams)) \
-                      .filter(FoodLossRecord.user_id == user_id) \
-                      .filter(FoodLossRecord.record_date >= start_str) \
-                      .filter(FoodLossRecord.record_date <= end_str) \
-                      .scalar()
-                      
-    # ★ 修正: None ではなく 0.0 を確実に返す ★
-    return total_grams if total_grams is not None else 0.0
-
-def get_total_grams_for_weeks(db: Session, user_id: int, weeks_ago: int) -> float:
-    """
-    過去 N 週間分の合計廃棄重量（グラム）を取得する。（weeks_ago = N週間前から今日までの合計）
-    """
-    today = datetime.datetime.now()
-    start_point = today - timedelta(weeks=weeks_ago) 
-    start_str = start_point.isoformat()
-    
-    total_grams = db.query(func.sum(FoodLossRecord.weight_grams)) \
-                      .filter(FoodLossRecord.user_id == user_id) \
-                      .filter(FoodLossRecord.record_date >= start_str) \
-                      .filter(FoodLossRecord.record_date < today.isoformat()) \
-                      .scalar()
-                      
-    # ★ 修正: None ではなく 0.0 を確実に返す ★
-    return total_grams if total_grams is not None else 0.0
-
-# ----------------------------------------------------
-# ★ 修正: メインポイント計算ロジック (NoneType処理と計算調整) ★
-# ----------------------------------------------------
-
-def calculate_weekly_points_logic(db: Session, user_id: int) -> Dict[str, Any]:
-    """
-    ユーザーの週次廃棄量を評価し、ポイントを計算・付与するメインロジック。
-    """
-    
-    today = datetime.datetime.now()
-    # 月曜日始まりの日曜終わりを取得するヘルパー関数を使用
-    this_monday, this_sunday = get_week_boundaries(today) 
-
-    # 先週の境界を計算
-    last_monday = this_monday - timedelta(weeks=1)
-    last_sunday = this_sunday - timedelta(weeks=1)
-    
-    # --- 1. 週間の合計廃棄量を取得 ---
-    
-    # ヘルパー関数は None ではなく 0.0 を返すため、Noneチェックは不要
-    this_week_grams = get_total_grams_for_week(db, user_id, this_monday, this_sunday)
-    last_week_grams = get_total_grams_for_week(db, user_id, last_monday, last_sunday)
-    
-    # 過去4週間（今週を含まない先週以前の4週間）の合計を取得
-    # NOTE: get_total_grams_for_weeks(4) は過去4週間全体（今日から4週間前まで）を集計するロジックでした。
-    # ここでは、過去4週間分のデータが必要なので、それを基に平均を計算します。
-    
-    # 過去4週間（先週、先々週、その前の週、その前の週）の合計
-    past_four_weeks_total = 0.0
-    
-    # 過去4週間分の合計を計算するロジックを、ここでは省略します。
-    # 既存の get_total_grams_for_weeks(4) が過去4週分のデータ合計を返していると仮定します。
-    past_four_weeks_grams = get_total_grams_for_weeks(db, user_id, 4) 
-    
-    
-    # ベースライン（過去4週間の平均）を計算
-    # 過去4週間全体がデータ対象となるため、割り算の前に合計が0でないことを確認
-    if past_four_weeks_grams > 0:
-        base_line_grams = past_four_weeks_grams / 4.0
-    else:
-        base_line_grams = 0.0
-
-    
-    # --- 2. 削減率の計算 ---
-    points_to_add = 0
-    rate_last_week = 0.0
+    # 2. 週間記録を全て取得（文字列のISO範囲で比較）
+    records = db.query(FoodLossRecord, LossReason.reason_text) \
+        .join(LossReason) \
+        .filter(
+            FoodLossRecord.user_id == user_id,
+            FoodLossRecord.record_date.between(start_str, end_str)
+        ) \
+        .order_by(FoodLossRecord.record_date) \
+        .all()
     rate_baseline = 0.0
     
     # a. 先週比の削減率を計算
@@ -178,9 +75,6 @@ def calculate_weekly_points_logic(db: Session, user_id: int) -> Dict[str, Any]:
         "rate_last_week": round(rate_last_week * 100, 2),
         "rate_baseline": round(base_line_grams / (1 if base_line_grams == 0 else base_line_grams) * 100, 2) # rate_baselineの表示を修正
     }
-
-# ... (get_all_loss_reasons, get_user_profile, add_new_loss_record_direct, get_start_and_end_of_week, get_weekly_stats はそのまま維持) ...
-
 def get_all_loss_reasons(db: Session) -> List[str]:
     """
     データベースに登録されている全ての廃棄理由のテキストをリストで取得する。
@@ -244,57 +138,143 @@ def add_new_loss_record_direct(db: Session, record_data: Dict[str, Any]) -> int:
 def get_start_and_end_of_week(target_date: datetime.date) -> Tuple[datetime.date, datetime.date]:
     """与えられた日付を含む週の日曜と土曜を返す (日曜日を週の始まりとする)。"""
     # target_date.weekday() は月曜(0)から日曜(6)
-    start_of_week = target_date - datetime.timedelta(days=(target_date.weekday() + 1) % 7)
-    end_of_week = start_of_week + datetime.timedelta(days=6)
+    start_of_week = target_date - timedelta(days=(target_date.weekday() + 1) % 7)
+    end_of_week = start_of_week + timedelta(days=6)
     return start_of_week, end_of_week
 
-def get_weekly_stats(db: Session, user_id: int, target_date: datetime.date) -> Dict[str, Any]:
+def get_start_and_end_of_week(target_date: date) -> Tuple[date, date]:
+    """与えられた日付を含む週の日曜と土曜を返す (日曜日を週の始まりとする)。"""
+    # target_date.weekday() は月曜(0)から日曜(6)
+    start_of_week = target_date - timedelta(days=(target_date.weekday() + 1) % 7)
+    end_of_week = start_of_week + timedelta(days=6)
+    return start_of_week, end_of_week
+
+def get_weekly_stats(db: Session, user_id: int, target_date: date) -> Dict[str, Any]:
     """
     指定された日付を含む週の統計データ（グラフ用、表用）を取得し、JSが期待する形式に整形する。
     """
-    start_of_week, end_of_week = get_start_and_end_of_week(target_date)
+    # target_dateから週の始まりと終わり（日曜〜土曜）を計算
+    date_start_of_week, date_end_of_week = get_start_and_end_of_week(target_date)
+
+    # 1. データベースクエリ用のISO文字列境界を作成
+    datetime_start = datetime.combine(date_start_of_week, time.min)
+    datetime_end = datetime.combine(date_end_of_week, time.max)
     
-    # 1. 週間記録を全て取得
+    start_str = datetime_start.isoformat()
+    end_str = datetime_end.isoformat()
+    
+    # 2. 週間記録を全て取得
     records = db.query(FoodLossRecord, LossReason.reason_text) \
         .join(LossReason) \
         .filter(
             FoodLossRecord.user_id == user_id,
-            FoodLossRecord.record_date.between(start_of_week, end_of_week)
+            # ISO文字列で比較することで、範囲内の全てのタイムスタンプを捕捉
+            FoodLossRecord.record_date.between(start_str, end_str) 
         ) \
         .order_by(FoodLossRecord.record_date) \
         .all()
         
+    # 2-b. 週間廃棄品目一覧のデータを作成 (テーブル用)
     dish_table_data = [
         {
-            "date": rec.FoodLossRecord.record_date.strftime('%m/%d'),
+            # 日付を 'MM/DD' 形式に変換
+            "date": datetime.fromisoformat(rec.FoodLossRecord.record_date).strftime('%m/%d'),
             "dish_name": rec.FoodLossRecord.item_name,
-            "weight_grams": rec.FoodLossRecord.weight_grams,
+            # 小数点以下1桁に丸める
+            "weight_grams": round(rec.FoodLossRecord.weight_grams, 1), 
             "reason": rec.reason_text
         }
         for rec in records
     ]
     
-    # 2. 日別合計グラム数を計算 (グラフデータ用)
-    daily_grams = {day: 0.0 for day in ['日', '月', '火', '水', '木', '金', '土']}
-    
-    # データを集計
+    # --- 3. 日別合計グラム数を計算 (Pythonで集計) ---
+    # キー: YYYY-MM-DD
+    daily_grams_aggregation = {}
     for rec in records:
-        day_of_week_index = (rec.FoodLossRecord.record_date.weekday() + 1) % 7 # 0=日, 1=月...
-        day_name = ['日', '月', '火', '水', '木', '金', '土'][day_of_week_index]
-        daily_grams[day_name] += rec.FoodLossRecord.weight_grams
+        # レコードの日付部分を取得
+        record_date = datetime.fromisoformat(rec.FoodLossRecord.record_date).date()
+        date_str = record_date.strftime('%Y-%m-%d')
+        grams = rec.FoodLossRecord.weight_grams
         
-    daily_graph_data = [
-        {"day": day, "total_grams": daily_grams[day]}
-        for day in daily_grams.keys()
-    ]
+        daily_grams_aggregation[date_str] = daily_grams_aggregation.get(date_str, 0.0) + grams
+        
+    # --- 4. 全曜日をカバーし、グラフデータを作成 (日曜始まりで順序を保証) ---
+    daily_graph_data = []
+    jp_weekdays = ["日", "月", "火", "水", "木", "金", "土"]
+    current_date = date_start_of_week # 日曜日から開始
+    for i in range(7):
+        date_str = current_date.strftime('%Y-%m-%d')
+        # i=0が日曜日、i=6が土曜日
+        day_name = jp_weekdays[i]
+        
+        # 該当日の合計を取得（データがなければ 0.0）
+        grams = round(daily_grams_aggregation.get(date_str, 0.0), 1)
+        
+        daily_graph_data.append({
+            "day": day_name, 
+            "total_grams": grams
+        })
+        current_date += timedelta(days=1) # 次の日へ
     
-    # 3. 最終的なレスポンス形式に整形
+    # 5. 最終的なレスポンス形式に整形
     is_data_present = len(records) > 0
 
     return {
         "is_data_present": is_data_present,
-        "week_start": start_of_week.strftime('%Y-%m-%d'),
+        "week_start": date_start_of_week.strftime('%Y-%m-%d'),
         "daily_graph_data": daily_graph_data,
         "dish_table": dish_table_data
     }
 
+def add_test_loss_records(db: Session, user_id: int) -> bool:
+    """
+    ユーザーのフードロス記録がまだ存在しない場合、テストデータを挿入する。
+    """
+    # 既にレコードが存在するかチェックし、存在する場合は挿入をスキップ
+    if db.query(FoodLossRecord).filter_by(user_id=user_id).first():
+        print(f"User {user_id} already has records. Skipping test data insertion.")
+        return False
+    
+    # LossReasonのIDを取得
+    # NOTE: database.pyのinit_db()で以下の理由が投入されていることを前提とする
+    reason_expired = db.query(LossReason).filter_by(reason_text="期限切れ").first()
+    reason_eaten = db.query(LossReason).filter_by(reason_text="料理後の廃棄").first()
+    
+    if not reason_expired or not reason_eaten:
+        print("Error: Loss reasons not found. Cannot insert test data.")
+        return False
+        
+    # テストデータを挿入する日付を決定
+    today = datetime.now()
+    # 記録を過去の任意の日付（例：5日前と3日前）で作成し、今週の統計に反映されるようにする
+    a_week_ago = today - timedelta(days=7)
+
+    records = [
+        FoodLossRecord(
+            user_id=user_id,
+            item_name="牛乳 (期限切れ)",
+            weight_grams=1000.0,
+            loss_reason_id=reason_expired.id,
+            # ISOフォーマット文字列に変換して挿入
+            record_date=a_week_ago.isoformat()
+        ),
+        FoodLossRecord(
+            user_id=user_id,
+            item_name="カレーの食べ残し",
+            weight_grams=350.5,
+            loss_reason_id=reason_eaten.id,
+            record_date=a_week_ago.isoformat()
+        ),
+        FoodLossRecord(
+            user_id=user_id,
+            item_name="ご飯 (期限切れ)",
+            weight_grams=500.0,
+            loss_reason_id=reason_expired.id,
+            record_date=today.isoformat()
+        )
+    ]
+    
+    db.add_all(records)
+    db.commit()
+    print(f"Inserted {len(records)} test records for user {user_id}.")
+    return True

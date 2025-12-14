@@ -6,32 +6,67 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/log.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <title>テストWebアプリ</title>
+    <title>週間フードロス記録</title> 
 </head>
 <body>
-
+    
     <div class="container">
         <header class="header">
-            <a href="{{ url_for('log', date=prev_week) }}">前週</a>
-            <h3>{{ week_range }}</h3>
-            <a href="{{ url_for('log', date=next_week) }}">次週</a>
-        </header>
-        <nav class="week-nav">
-            {% for day in week_dates %}
-            <div class="day-selector {% if day.date == today %}active{% endif %}">
-                <span class="weekday">{{ day.weekday_jp }}</span>
-                <span class="day-num">{{ day.day_num }}</span>
+            <div class="week-nav">
+                <a href="{{ url_for('log', date=prev_week) }}" class="nav-button"><i class="fas fa-chevron-left"></i> 前週</a>
+                <h3 class="week-range-text">{{ week_range }}</h3>
+                <a href="{{ url_for('log', date=next_week) }}" class="nav-button">次週 <i class="fas fa-chevron-right"></i></a>
             </div>
-            {% endfor %}
-        </nav>
+        </header>
+        
+        <main class="log-main-content"> 
+            
+            <div class="daily-navigation">
+                {% for day in week_dates %}
+                    <a href="{{ url_for('log', date=day.date|string) }}" 
+                       class="day-card {% if day.date == today %}today{% endif %}">
+                        <span class="day-name">{{ day.weekday_jp }}</span>
+                        <span class="day-number">{{ day.day_num }}</span>
+                    </a>
+                {% endfor %}
+            </div>
 
-        <main class="meal-cards">
-            <h1>ここに記録が表示されます。</h1>
+            <h1 class="section-title">週間フードロス分析</h1>
+
+            <div class="stats-content">
+                <div class="chart-container card">
+                    <h3>日別廃棄量 (グラム)</h3>
+                    <canvas id="dailyLossChart"></canvas> 
+                </div>
+
+                <div class="table-container card"> 
+                    <h3>週間廃棄品目一覧</h3>
+                    <div class="table-scroll"> 
+                        <table id="dishTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>日付</th>
+                                    <th>品目名</th>
+                                    <th>重量 (g)</th>
+                                    <th>理由</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <p id="noDataMessage" style="display: none; text-align: center;">この週の記録はありません。</p>
+            
         </main>
-    </div>
 
-
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/log_stats.js') }}"></script>
+    
     {% include 'footer.html' %}
+    </div> 
+
 </body>
 </html>

@@ -40,10 +40,10 @@ def init_db():
         if not db.query(LossReason).first():
             reasons = [
                 LossReason(reason_text="期限切れ"),
-                LossReason(reason_text="食べ残し"),
-                LossReason(reason_text="傷んだ"),
+                LossReason(reason_text="調理中の廃棄"),
+                LossReason(reason_text="料理後の廃棄"),
                 LossReason(reason_text="調理失敗"),
-                LossReason(reason_text="買いすぎ")
+                LossReason(reason_text="その他")
             ]
             db.add_all(reasons)
             db.commit()

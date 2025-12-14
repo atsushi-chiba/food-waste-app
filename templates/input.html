@@ -11,12 +11,12 @@
     <div class="container">
         <h2>今日({{ today }})のデータを入力</h2>
 
-        <form method="post" class="input-form">
+        <form method="post" class="input-form" action="/input">
             
             <div class="card">
                 <div class="form-group">
-                    <label for="dish1">料理名</label>
-                    <input type="text" id="dish1" name="dish1" placeholder="例: カレーライス" />
+                    <label for="dish1">料理名 / 廃棄品目名</label>
+                    <input type="text" id="dish1" name="item_name" placeholder="例: カレーライス、牛乳" required />
                 </div>
                 
                 <!--
@@ -28,7 +28,7 @@
 
                 <div class="form-group">
                     <label for="amount1">廃棄量[g]</label>
-                    <input type="number" id="amount1" name="amount1" placeholder="例: 100" />
+                    <input type="number" id="amount1" name="weight_grams" placeholder="例: 100" required />
                 </div>
             </div>
 
@@ -37,19 +37,19 @@
                     <label>廃棄理由:</label>
                     
                     <div class="radio-options">
-                        <input type="radio" id="reason1-opt1" name="reason1" value="期限切れ" required>
+                        <input type="radio" id="reason1-opt1" name="reason_text" value="期限切れ" required>
                         <label for="reason1-opt1">期限切れ</label>
 
-                        <input type="radio" id="reason1-opt2" name="reason1" value="調理中の廃棄">
+                        <input type="radio" id="reason1-opt2" name="reason_text" value="調理中の廃棄">
                         <label for="reason1-opt2">調理中の廃棄</label>
 
-                        <input type="radio" id="reason1-opt3" name="reason1" value="料理後の廃棄">
+                        <input type="radio" id="reason1-opt3" name="reason_text" value="料理後の廃棄">
                         <label for="reason1-opt3">料理後の廃棄</label>
 
-                        <input type="radio" id="reason1-opt4" name="reason1" value="食べ残し">
+                        <input type="radio" id="reason1-opt4" name="reason_text" value="食べ残し">
                         <label for="reason1-opt4">食べ残し</label>
 
-                        <input type="radio" id="reason1-opt5" name="reason1" value="その他">
+                        <input type="radio" id="reason1-opt5" name="reason_text" value="その他">
                         <label for="reason1-opt5">その他</label>
                     </div>
                 </div>

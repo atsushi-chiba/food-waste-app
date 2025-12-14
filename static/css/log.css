@@ -1,143 +1,208 @@
-/* 基本設定 */
+:root {
+    --primary-color: #4CAF50; /* 緑 */
+    --secondary-color: #FFC107; /* 黄色 */
+    --background-light: #f5f5f5;
+    --text-dark: #333;
+    --border-color: #ddd;
+    --card-bg: #fff;
+    --today-color: #2196F3; /* 青 */
+}
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: #f4f4f8;
-    color: #333;
+    font-family: 'Arial', sans-serif;
+    background-color: var(--background-light);
+    color: var(--text-dark);
     margin: 0;
-    padding-bottom: 80px; /* ボトムナビゲーションの高さ分 */
+    padding: 0;
 }
 
 .container {
-    padding: 15px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
-/* ヘッダー */
+.log-main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.section-title {
+    color: var(--primary-color);
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.8em;
+}
+
+/* --- ヘッダーと週ナビゲーションのスタイル --- */
 .header {
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 15px 20px;
+    margin-bottom: 20px;
+}
+
+.week-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
 }
-.header h3 {
+
+.week-range-text {
     margin: 0;
-    font-size: 1.1em; /* 週の範囲を少し大きく */
+    font-size: 1.4em;
     font-weight: bold;
-    color: #333;
-}
-.header .actions {
-    display: none; /* actions spanは使用しない */
-}
-/* 週ナビゲーションボタンのデザインをシンプルに */
-.header a {
-    text-decoration: none;
-    background-color: transparent; /* 背景を透明に */
-    color: #007bff; /* リンク色 */
-    border: none;
-    padding: 5px 10px; /* コンパクトに */
-    border-radius: 8px; 
-    font-size: 0.9em;
-    font-weight: bold;
-    transition: background-color 0.2s;
-}
-
-/* マウスを乗せた時のスタイル */
-.header a:hover {
-    background-color: #e0e0e0; /* ホバー時に薄いグレー */
-}
-
-/* 週間カレンダー (日別セレクター) */
-.week-nav {
-    display: flex;
-    justify-content: space-around;
+    color: var(--text-dark);
     text-align: center;
-    margin-bottom: 25px;
-    background-color: white; /* カレンダー全体をカード風の背景に */
-    border-radius: 12px;
-    padding: 8px 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    flex-grow: 1;
 }
-.day-selector {
+
+.nav-button {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    white-space: nowrap; /* テキストの折り返しを防ぐ */
+}
+
+.nav-button:hover {
+    background-color: #388E3C; /* primary-colorの少し濃い色 */
+}
+
+/* --- 日別ナビゲーション/カレンダー風表示のスタイル --- */
+.daily-navigation {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    background-color: var(--card-bg);
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.day-card {
     display: flex;
     flex-direction: column;
-    align-items: center; /* センタリング */
-    gap: 3px;
-    padding: 5px 2px;
-    border-radius: 8px; /* 角丸を適用 */
-    width: 38px; /* タップしやすさとコンパクトさを両立 */
-    height: 55px; /* 高さを固定 */
+    align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-.day-selector:hover:not(.active) {
-    background-color: #f0f0f0; /* ホバー効果 */
-}
-.day-selector .weekday {
-    font-size: 0.75em; /* 曜日名 */
-    font-weight: bold;
-    color: #777;
-}
-.day-selector .day-num {
-    font-size: 1.1em; /* 日付を大きく */
-    font-weight: bold;
-}
-/* アクティブな日のスタイル */
-.day-selector.active {
-    background-color: #28a745; /* 緑色 (統一) */
-    color: white;
-}
-.day-selector.active .weekday {
-    color: white;
+    padding: 10px 5px;
+    border-radius: 8px;
+    border: 2px solid var(--border-color);
+    text-decoration: none;
+    color: var(--text-dark);
+    transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
 }
 
-/* 食事記録カード */
-.meal-cards .card {
-    background-color: white;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-.card-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: bold;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #f0f0f0;
-    margin-bottom: 10px;
-}
-.card-header .date-highlight {
+.day-card:hover {
     background-color: #eee;
-    padding: 3px 8px;
-    border-radius: 5px;
+    transform: translateY(-2px);
 }
-.card-header .today-bg {
-    background-color: #28a745;
-    color: white;
+
+.day-card.today {
+    background-color: var(--today-color);
+    border-color: var(--today-color);
+    color: var(--card-bg); /* 白い文字 */
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
 }
-.card-header .today-label {
-    background-color: #007bff;
-    color: white;
-    font-size: 0.7em;
-    padding: 3px 6px;
-    border-radius: 4px;
+
+.day-card.today:hover {
+    background-color: #1976D2;
+    border-color: #1976D2;
 }
-.card-header .fa-bars {
-    margin-left: auto; /* 右端に配置 */
-    color: #888;
-}
-.meal-slot {
-    display: flex;
-    align-items: center;
-    padding: 10px 0;
-}
-.meal-slot span {
-    font-weight: bold;
-    width: 40px;
-}
-.meal-slot p {
-    margin: 0;
-    color: #aaa;
+
+.day-name {
     font-size: 0.9em;
+    font-weight: bold;
+}
+
+.day-number {
+    font-size: 1.5em;
+    font-weight: bolder;
+    margin-top: 3px;
+}
+
+
+/* --- 統計コンテンツのスタイル --- */
+.stats-content {
+    display: grid;
+    grid-template-columns: 1fr; /* モバイルファースト */
+    gap: 20px;
+}
+
+.card {
+    background-color: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container h3,
+.table-container h3 {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 5px;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+/* --- テーブルのスタイル --- */
+.table-scroll {
+    overflow-x: auto; /* テーブルが画面幅を超えたらスクロール可能に */
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 500px; /* 小さすぎる画面での崩れを防ぐ */
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.data-table th {
+    background-color: #E8F5E9; /* primary-colorの薄い色 */
+    color: var(--text-dark);
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9em;
+}
+
+.data-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* データなしメッセージのスタイル */
+#noDataMessage {
+    margin-top: 30px;
+    padding: 20px;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #999;
+    background-color: var(--card-bg);
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+}
+
+/* --- メディアクエリ: PC/タブレット向けのレイアウト --- */
+@media (min-width: 768px) {
+    .stats-content {
+        /* PCではグラフとテーブルを2カラムで表示 */
+        grid-template-columns: 2fr 3fr; 
+    }
+    
+    .chart-container {
+        /* グラフの高さをある程度確保 */
+        height: 400px; 
+    }
 }
