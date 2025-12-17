@@ -284,7 +284,7 @@ def login():
                 else:
                     # Cookieがない場合: 初回アクセス
                     # 初回起動時のみ表示するページ（テンプレート）をレンダリングする
-                    response = make_response(render_template('welcome.html'))
+                    response = make_response(render_template('input.html'))
 
                     # 2. Cookieを設定
                     # 'first_visit'というキーで値を保存し、有効期限を長めに設定する（例: 1年後）

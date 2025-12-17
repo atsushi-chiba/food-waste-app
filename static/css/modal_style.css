@@ -1,0 +1,105 @@
+/* ======================================= */
+/* 1. モーダルオーバーレイ */
+/* ======================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* 背景色を少し明るく調整 */
+    background-color: rgba(0, 0, 0, 0.7); 
+    display: none; 
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    /* フェードインアニメーションの準備 */
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out; 
+}
+
+/* モーダル表示時に適用されるスタイル（JavaScriptで追加/削除） */
+.modal-overlay.is-active {
+    display: flex;
+    opacity: 1;
+}
+
+/* ======================================= */
+/* 2. モーダルコンテンツ (Welcome Box) */
+/* ======================================= */
+.modal-content {
+    background-color: #ffffff; /* 背景を白に */
+    padding: 40px 30px;
+    border-radius: 15px; /* 角を丸く */
+    text-align: center;
+    /* 奥行きを出すためのシャドウを強調 */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); 
+    max-width: 90%;
+    width: 380px; /* 少し幅を狭くしてモバイルフレンドリーに */
+    position: relative;
+    /* スケールアップアニメーションの準備 */
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* バウンス効果 */
+}
+
+/* モーダル表示時にコンテンツを拡大 */
+.modal-overlay.is-active .modal-content {
+    transform: scale(1);
+}
+
+/* ======================================= */
+/* 3. テキスト・見出しのスタイル */
+/* ======================================= */
+.modal-content h1 {
+    margin-top: 0;
+    color: #333333;
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eeeeee;
+    padding-bottom: 10px;
+}
+
+.modal-content p {
+    color: #666666;
+    font-size: 0.9em;
+    margin-top: 15px;
+}
+
+/* ======================================= */
+/* 4. ポイント表示 (.textBox) の強調 */
+/* ======================================= */
+/* points.cssのスタイルが適用される前提で、更に強調 */
+.modal-content .textBox {
+    display: inline-block;
+    padding: 15px 30px;
+    margin: 15px 0 25px;
+    font-size: 2.2em; /* 文字を大きく */
+    font-weight: bold;
+    color: #007bff; /* メインカラー（例として青） */
+    background-color: #e9f5ff; /* ポイントを囲む背景色 */
+    border-radius: 8px;
+    /* 内部のシャドウで浮き出し感を出す */
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1); 
+    /* points.cssのスタイルに合わせて必要に応じて調整してください */
+}
+
+/* ======================================= */
+/* 5. 閉じるボタン */
+/* ======================================= */
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 30px;
+    line-height: 1;
+    color: #aaaaaa;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 5px 10px;
+    transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+    color: #555555;
+}

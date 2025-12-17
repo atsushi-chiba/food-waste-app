@@ -4,10 +4,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/input.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modal_style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <title>テストWebアプリ</title>
 </head>
 <body>
+    <div id="welcomeModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" id="closeModalButton">&times;</button>
+            
+            <h1>昨日の結果</h1>
+            
+            <div class="textBox">{{ yesterday_points | default('0P GET') }}</div>
+            <p>ポイント数はポイントタブから確認できます。</p>
+
+        </div>
+    </div>
+
     <div class="container">
         <h2>今日({{ today }})のデータを入力</h2>
 
@@ -59,7 +72,10 @@
 
         </form>
     </div>
-
+    
     {% include 'footer.html' %}
+
+    
+    <script src="{{ url_for('static', filename='js/modal_script.js') }}"></script>
 </body>
 </html>

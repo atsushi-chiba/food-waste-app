@@ -8,8 +8,9 @@ bp = Blueprint('knowledge_bp', __name__, url_prefix='/knowledge')
 
 FILE_GROUP_MAP = {
     '豆知識(料理).csv': '料理',
-    '豆知識(掃除).csv': '掃除',      # 例: 新規追加するファイル
-    '豆知識(その他).csv': 'その他'  # 例: 新規追加するファイル
+    '豆知識(掃除).csv': '掃除',    
+    '豆知識(可食部).csv': '可食部',  
+    '豆知識(その他).csv': 'その他'  
 }
 
 # 💡 CSVファイルの相対パス (staticフォルダからの相対パス)
@@ -39,7 +40,23 @@ def load_knowledge_data():
             
             df = df.iloc[1:].copy()
             # カラム名は、すべてのファイルでこの順番と内容であることを前提とします
-            df.columns = ['category', 'title', 'content'] 
+            
+            has_explicit_category = False # フラグを初期化
+            
+            if df.shape[1] == 2:
+                # 2列の場合 (例: title, content のみ)
+                df.columns = ['title', 'content'] 
+                # categoryはファイル名から取得したgroupで補完
+                df['category'] = group 
+                has_explicit_category = False
+            elif df.shape[1] == 3:
+                # 3列の場合 (例: category, title, content の全てがCSVに含まれている)
+                df.columns = ['category', 'title', 'content'] 
+                has_explicit_category = True
+            else:
+                # 2列または3列でない場合は警告を出してスキップ
+                print(f"⚠️ 警告: ファイル '{file_name}' の列数が予期しない値です ({df.shape[1]} 列)。2列(title, content)または3列(category, title, content)を想定しています。")
+                continue
 
             df.replace('', np.nan, inplace=True)
             df.dropna(subset=['title', 'content'], inplace=True) 
