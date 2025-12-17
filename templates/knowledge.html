@@ -38,7 +38,11 @@
                 
                 {% for item in knowledge_list %}
                 <div class="knowledge-item" data-target="detail-{{ item.id }}" data-category="{{ item.filter_group }}">
+                    {% if item.category %}
                     <span class="title">{{ item.category }}</span> 
+                    {% else %}
+                    <span class="title">{{ item.title }}</span> 
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
@@ -49,9 +53,14 @@
     <div id="detail-{{ item.id }}" class="detail-modal">
     <div class="detail-content">
         <span class="close-btn">&times;</span>
+        {% if item.category %}
         <h1>廃棄部分：{{ item.category }}</h1>
         <h2>再利用方法：{{ item.title }}</h2> 
         <p>説明：{{ item.content }}</p> 
+        {% else %}
+        <h1>廃棄部分：{{ item.title }}</h1> 
+        <p>説明：{{ item.content }}</p> 
+        {% endif %}
     </div>
     </div>
     {% endfor %}

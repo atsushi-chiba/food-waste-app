@@ -39,26 +39,30 @@ def load_knowledge_data():
 
             
             df = df.iloc[1:].copy()
-            # カラム名は、すべてのファイルでこの順番と内容であることを前提とします
             
-            has_explicit_category = False # フラグを初期化
+            # テンプレートでの category の有無チェックを有効にするため、まず空文字列をNaNに変換
+            df.replace('', np.nan, inplace=True) 
+            
+            # カラム名は、すべてのファイルでこの順番と内容であることを前提とします
             
             if df.shape[1] == 2:
                 # 2列の場合 (例: title, content のみ)
                 df.columns = ['title', 'content'] 
-                # categoryはファイル名から取得したgroupで補完
-                df['category'] = group 
-                has_explicit_category = False
+                # テンプレートで category が False と判定されるように None を設定
+                df['category'] = None 
             elif df.shape[1] == 3:
                 # 3列の場合 (例: category, title, content の全てがCSVに含まれている)
                 df.columns = ['category', 'title', 'content'] 
-                has_explicit_category = True
+                
+                # 【修正点】fillna(None)の代わりにreplace(np.nan, None)を使用して、
+                # NaNをPythonのNoneに変換する
+                df['category'] = df['category'].replace(np.nan, None)
             else:
                 # 2列または3列でない場合は警告を出してスキップ
                 print(f"⚠️ 警告: ファイル '{file_name}' の列数が予期しない値です ({df.shape[1]} 列)。2列(title, content)または3列(category, title, content)を想定しています。")
                 continue
 
-            df.replace('', np.nan, inplace=True)
+            # title, contentがNaN（空欄）の行は削除
             df.dropna(subset=['title', 'content'], inplace=True) 
             
             # 💡 フィルタリンググループを割り当て
@@ -81,6 +85,8 @@ def load_knowledge_data():
     combined_df['id'] = combined_df.index.astype(str)
     
     # 最終的なリストとユニークなグループ名を取得
+    # Noneを含む可能性があるため、object型にキャスト
+    combined_df['category'] = combined_df['category'].astype(object) 
     knowledge_list = combined_df[['id', 'category', 'title', 'content', 'filter_group']].to_dict('records')
     unique_filter_groups = combined_df['filter_group'].dropna().unique().tolist()
     
