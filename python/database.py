@@ -33,6 +33,16 @@ def init_db():
     Base.metadata.create_all(bind=engine)
     print("Database tables created successfully!")
 
+    # --- 既存 DB に新しい列がなければ追加（軽いマイグレーション） ---
+    # SQLite では ALTER TABLE ADD COLUMN が使えるため、存在確認してから追加する
+    from sqlalchemy import inspect, text
+    inspector = inspect(engine)
+    columns = [col['name'] for col in inspector.get_columns('users')]
+    if 'last_points_awarded_week_start' not in columns:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN last_points_awarded_week_start VARCHAR(10)"))
+            print("Added column users.last_points_awarded_week_start")
+
     # 初期データを投入
     db = SessionLocal()
     try:

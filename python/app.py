@@ -466,6 +466,47 @@ def get_user_profile_api():
     finally:
         db.close()
 
+@app.route("/api/redeem", methods=["POST"])
+def redeem_api():
+    """ポイント交換処理: 要認証。リクエスト JSON に item_name, cost を期待する"""
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"message": "認証が必要です。再ログインしてください。"}), 401
+
+    data = request.get_json() or {}
+    item_name = data.get('item_name')
+    cost = data.get('cost')
+
+    if not item_name or cost is None:
+        return jsonify({"message": "item_name と cost が必要です。"}), 400
+
+    try:
+        cost = int(cost)
+        if cost <= 0:
+            return jsonify({"message": "無効な cost 値です。"}), 400
+    except Exception:
+        return jsonify({"message": "cost は整数でなければなりません。"}), 400
+
+    db = next(get_db())
+    try:
+        user = get_user_by_id(db, user_id)
+        if not user:
+            return jsonify({"message": "ユーザーが見つかりません。"}), 404
+
+        if user.total_points < cost:
+            return jsonify({"message": "ポイントが不足しています。", "current_points": user.total_points}), 403
+
+        # ポイントを減算して確定
+        user.total_points -= cost
+        db.commit()
+
+        return jsonify({"message": f"{item_name} を交換しました。", "remaining_points": user.total_points}), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"message": f"交換処理中にエラーが発生しました: {str(e)}"}), 500
+    finally:
+        db.close()
 @app.route("/api/weekly_stats", methods=["GET"])
 def get_weekly_stats_api():
     user_id = session.get('user_id') 

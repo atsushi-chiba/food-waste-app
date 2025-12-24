@@ -58,30 +58,41 @@ def get_last_two_weeks(today: datetime) -> Dict[str, tuple[datetime, datetime]]:
         "last_week": (last_monday, last_sunday)
     }
 
-def calculate_weekly_statistics(db: Session, user_id: int) -> Dict[str, Any]:
+def calculate_weekly_statistics(db: Session, user_id: int, target_date: datetime = None) -> Dict[str, Any]:
     """
-    直近の「月曜日始まり、日曜日終わり」の一週間について、
+    指定した日付を含む「日曜始まり〜土曜終わり」の一週間について、
     廃棄された料理名リストと日別合計重量を計算する。
     """
-    
-    today = datetime.now()
-    monday, sunday = get_week_boundaries(today)
-    
+
+    if target_date is None:
+        target_date = datetime.now()
+
+    # target_date が date の場合は datetime に変換しておく
+    if not isinstance(target_date, datetime):
+        target_date = datetime(target_date.year, target_date.month, target_date.day)
+
+    # app.py の表示ロジックに合わせて「日曜始まり」にする
+    # app.py: start_of_week = target_date - timedelta(days=(target_date.weekday() + 1) % 7)
+    start_of_week = target_date - timedelta(days=(target_date.weekday() + 1) % 7)
+    # 週の開始（0:00）と終了（23:59:59.999999）を作る
+    week_start = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_end = (week_start + timedelta(days=6)).replace(hour=23, minute=59, second=59, microsecond=999999)
+
     # データベースのレコード日付は文字列（ISO 8601）として保存されているため、文字列形式に変換
-    monday_str = monday.isoformat()
-    sunday_str = sunday.isoformat()
+    week_start_str = week_start.isoformat()
+    week_end_str = week_end.isoformat()
 
     # 1. 週間の全記録を取得 (日付フィルター)
     weekly_records = db.query(FoodLossRecord) \
                        .filter(FoodLossRecord.user_id == user_id) \
-                       .filter(FoodLossRecord.record_date >= monday_str) \
-                       .filter(FoodLossRecord.record_date <= sunday_str) \
+                       .filter(FoodLossRecord.record_date >= week_start_str) \
+                       .filter(FoodLossRecord.record_date <= week_end_str) \
                        .all()
 
     if not weekly_records:
         return {
-            "week_start": monday.strftime('%Y-%m-%d'),
-            "week_end": sunday.strftime('%Y-%m-%d'),
+            "week_start": week_start.strftime('%Y-%m-%d'),
+            "week_end": week_end.strftime('%Y-%m-%d'),
             "is_data_present": False,
             "dish_table": [],
             "daily_graph_data": []
@@ -110,8 +121,8 @@ def calculate_weekly_statistics(db: Session, user_id: int) -> Dict[str, Any]:
             func.sum(FoodLossRecord.weight_grams).label("total_grams")
         )
         .filter(FoodLossRecord.user_id == user_id)
-        .filter(FoodLossRecord.record_date >= monday_str)
-        .filter(FoodLossRecord.record_date <= sunday_str)
+        .filter(FoodLossRecord.record_date >= week_start_str)
+        .filter(FoodLossRecord.record_date <= week_end_str)
         .group_by(func.substr(FoodLossRecord.record_date, 1, 10))
         .order_by("date")
         .all()
@@ -119,7 +130,7 @@ def calculate_weekly_statistics(db: Session, user_id: int) -> Dict[str, Any]:
     
     # 全曜日をカバーし、データがない日は 0 にする
     daily_graph_data = []
-    current_date = monday
+    current_date = week_start
     for i in range(7):
         date_str = current_date.strftime('%Y-%m-%d')
         grams = 0.0
@@ -138,8 +149,8 @@ def calculate_weekly_statistics(db: Session, user_id: int) -> Dict[str, Any]:
         current_date += timedelta(days=1)
         
     return {
-        "week_start": monday.strftime('%Y-%m-%d'),
-        "week_end": sunday.strftime('%Y-%m-%d'),
+        "week_start": week_start.strftime('%Y-%m-%d'),
+        "week_end": week_end.strftime('%Y-%m-%d'),
         "is_data_present": True,
         "dish_table": dish_table_data,
         "daily_graph_data": daily_graph_data

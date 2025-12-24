@@ -58,16 +58,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 4. 「はい」ボタンの処理 (★アラートをトーストに置き換え)
-    confirmYes.addEventListener('click', function() {
+    confirmYes.addEventListener('click', async function() {
         const itemToTrade = this.getAttribute('data-item');
-        
-        // ★★★ ここに実際の交換処理（ポイント減算、サーバーへのデータ送信など）を記述 ★★★
-        console.log(`${itemToTrade} の交換処理を実行します。`); 
-        
-        // 例：交換成功のメッセージを表示してから閉じる
-        // alert(`${itemToTrade} を交換しました！`); // 🗑️ 既存のダサいアラートを削除
-        showToast(`${itemToTrade} を交換しました！ 🎉`); // ✨ モダンなトースト通知に変更
-        closeModal();
+        // cost は modal 内の表示から取得
+        const cost = Number(document.getElementById('item-cost').textContent);
+
+        // サーバーへ交換リクエストを送る
+        try {
+            const resp = await fetch('/api/redeem', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ item_name: itemToTrade, cost: cost })
+            });
+
+            const result = await resp.json();
+
+            if (resp.ok) {
+                showToast(result.message);
+                // ポイント表示を更新
+                fetchAndDisplayPoints();
+            } else {
+                // 失敗時はエラーメッセージを表示
+                showToast(result.message || '交換に失敗しました');
+            }
+        } catch (err) {
+            console.error('交換リクエストエラー:', err);
+            showToast('交換中にエラーが発生しました');
+        } finally {
+            closeModal();
+        }
     });
 });
 

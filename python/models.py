@@ -16,6 +16,8 @@ class User(Base):
     password = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
     total_points = Column(Integer, nullable=False, default=0)
+    # 最後にポイントを付与した週の開始日 (YYYY-MM-DD). idempotency 用
+    last_points_awarded_week_start = Column(String(10), nullable=True)
 
     # このユーザーに関連するフードロス記録を定義します
     records = relationship("FoodLossRecord", back_populates="user")
