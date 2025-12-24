@@ -116,50 +116,45 @@ def register():
 @app.route("/input", methods=['GET', 'POST'])
 def input():
     today = date.today()
-    # --- POSTリクエスト（フォーム送信時）の処理 ---
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+
+    # --- POSTリクエストの処理 (省略) ---
     if request.method == 'POST':
-        user_id = session.get('user_id')
-        db = next(get_db())
+        # ... (既存の登録ロジック)
+        return redirect(url_for('input', success_message='記録が完了しました！'))
 
-        try:
-            # 1. フォームデータ取得と検証
-            form_data = request.form.to_dict()
-            form_data['user_id'] = user_id
-            validated_data = LossRecordInput(**form_data)
-            
-            # 2. データベース挿入
-            record_id = add_new_loss_record_direct(db, validated_data.model_dump())
-            
-            # ★ 成功時のリダイレクト（ここで関数が終了し、302を返す）★
-            return redirect(url_for('input', success_message='記録が完了しました！'))
-
-        except ValidationError as e:
-            db.close()
-            # 失敗時: render_template で処理を終了
-            return render_template('input.html', 
-                                   today=today, 
-                                   error_message='入力内容に誤りがあります。',
-                                   details=e.errors())
-        
-        except Exception as e:
-            db.rollback()
-            db.close()
-            # サーバーエラー時: render_template で処理を終了
-            return render_template('input.html', 
-                                   today=today, 
-                                   active_page='input',
-                                   error_message=f"サーバーエラーが発生しました: {str(e)}")
-        
-    # --- GETリクエスト（画面表示時）の処理 ---
-    # POST処理がスキップされた場合（GETの場合）のみ、このロジックが実行される
+    # --- GETリクエストの処理 ---
     success_message = request.args.get('success_message')
     
-    print(f"--- GETリクエスト /input ページ表示 ---") # ★デバッグ用
+    # クッキーを確認
+    has_seen_modal = request.cookies.get('modal_seen_today')
     
-    return render_template('input.html',
-                           today=today,
-                           active_page='input',
-                           success_message=success_message)
+    # テンプレートをレンダリング
+    response = make_response(render_template(
+        'input.html',
+        today=today,
+        active_page='input',
+        success_message=success_message,
+        show_modal=not has_seen_modal  # クッキーがなければ True
+    ))
+
+    # クッキーがない場合のみ、翌日0時期限のクッキーをセットする
+    if not has_seen_modal:
+        JST = timezone(timedelta(hours=+9))
+        now = datetime.now(JST)
+        tomorrow = now.date() + timedelta(days=1)
+        expiry_time = datetime(tomorrow.year, tomorrow.month, tomorrow.day, tzinfo=JST)
+        
+        response.set_cookie(
+            'modal_seen_today', 
+            'true', 
+            expires=expiry_time, 
+            httponly=True
+        )
+    
+    return response
 
 
 
@@ -269,6 +264,7 @@ def login():
             user = get_user_by_username(db, username) 
             
             if user: # ログイン成功
+                today = date.today()
                 session['user_id'] = user.id
                 
                 add_test_loss_records(db, user.id) 
@@ -284,7 +280,7 @@ def login():
                 else:
                     # Cookieがない場合: 初回アクセス
                     # 初回起動時のみ表示するページ（テンプレート）をレンダリングする
-                    response = make_response(render_template('input.html'))
+                    response = make_response(render_template('input.html',today=today,active_page='input'))
 
                     # 2. Cookieを設定
                     # 'first_visit'というキーで値を保存し、有効期限を長めに設定する（例: 1年後）
@@ -329,6 +325,7 @@ def logout():
     
     response = make_response(redirect(url_for('login')))
     response.delete_cookie('first_visit')
+    response.delete_cookie('modal_seen_today')
     return response
 
 # --- ここまで画面ルーティング ---

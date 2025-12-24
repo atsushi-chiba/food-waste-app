@@ -9,7 +9,7 @@
     <title>テストWebアプリ</title>
 </head>
 <body>
-    <div id="welcomeModal" class="modal-overlay">
+    <div id="welcomeModal" class="modal-overlay" style="{% if not show_modal %}display: none;{% endif %}">
         <div class="modal-content">
             <button class="modal-close" id="closeModalButton">&times;</button>
             
@@ -76,6 +76,7 @@
     {% include 'footer.html' %}
 
     
+    {% if show_modal %}
     <script src="{{ url_for('static', filename='js/modal_script.js') }}"></script>
-</body>
+    {% endif %}</body>
 </html>

@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base, User, LossReason, FoodLossRecord
 import os
+import hashlib
 
 # データベースファイルへのパスを定義
 # os.path.dirname(__file__) は現在のファイルのディレクトリパス (例: C:/.../social-implementation/python)
@@ -25,7 +26,7 @@ def get_db():
         db.close()
 
 def init_db():
-    # データベースディレクトリが存在しなければ作成
+    # データベースディレクトリの作成
     db_dir = os.path.dirname(DATABASE_PATH)
     if not os.path.exists(db_dir):
         os.makedirs(db_dir)
@@ -33,21 +34,37 @@ def init_db():
     Base.metadata.create_all(bind=engine)
     print("Database tables created successfully!")
 
-    # 初期データを投入
     db = SessionLocal()
     try:
-        # loss_reasonsテーブルに初期データがなければ追加
+        # 1. 初期廃棄理由の投入 (既存ロジック)
         if not db.query(LossReason).first():
             reasons = [
                 LossReason(reason_text="期限切れ"),
                 LossReason(reason_text="調理中の廃棄"),
                 LossReason(reason_text="料理後の廃棄"),
                 LossReason(reason_text="調理失敗"),
-                LossReason(reason_text="その他")
+                LossReason(reason_text="その他"),
+                LossReason(reason_text="食べ残し") # insert_user.pyで使われていたので追加を推奨
             ]
             db.add_all(reasons)
             db.commit()
             print("Loss reasons added.")
+
+        # 2. テストユーザーの投入 (追加ロジック)
+        if not db.query(User).filter_by(username="a").first():
+            hashed_password = hashlib.sha256("testpass".encode()).hexdigest() #
+            test_user = User(
+                username="a", 
+                password=hashed_password, 
+                email="a@a"
+            )
+            db.add(test_user)
+            db.commit()
+            print("Test user 'a' created automatically.")
+            
+    except Exception as e:
+        print(f"Error during init_db: {e}")
+        db.rollback()
     finally:
         db.close()
 
