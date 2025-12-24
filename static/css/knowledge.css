@@ -220,3 +220,41 @@ h1 {
 body.modal-open {
     overflow: hidden;
 }
+
+/* --- 検索ボックスのスタイル --- */
+.search-container {
+    margin: 10px 0 20px 0;
+    position: relative;
+    width: 100%;
+}
+
+#knowledge-search {
+    width: 100%;
+    padding: 12px 15px 12px 40px; /* 左側にアイコン用の余白 */
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#knowledge-search:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.2);
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}
+
+/* 検索結果がゼロの場合のメッセージ用（必要に応じてJSで表示） */
+.no-result-message {
+    padding: 20px;
+    color: #888;
+    text-align: center;
+}

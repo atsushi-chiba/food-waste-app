@@ -19,6 +19,12 @@
             <button class="filter-btn" data-filter="その他">その他</button>
             <button class="filter-btn" data-filter="全て">全て表示</button>
         </div>
+
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="knowledge-search" placeholder="キーワードで検索（例：卵、皮）" />
+        </div>
+        
         <div class="textBox">
             <div class="knowledge-list-container" id="knowledge-list-container-trivia">
                 {% for item in knowledge_list %}
