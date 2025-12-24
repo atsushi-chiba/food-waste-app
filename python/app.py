@@ -254,55 +254,52 @@ def account():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # POSTリクエスト（フォームが送信された）の場合
     if request.method == 'POST':
         db = next(get_db())
         username = request.form.get('username')
-        
-        # ★ デバッグ用: POSTされたユーザー名を表示してみる ★
-        print(f"--- POSTリクエスト受信: ユーザー名 '{username}' ---")
 
         try:
             user = get_user_by_username(db, username) 
-            
-            if user: # ログイン成功
-                today = date.today()
+            if user:
                 session['user_id'] = user.id
-                
                 add_test_loss_records(db, user.id) 
+
+                # --- モーダル表示判定ロジック ---
+                # 今日すでにモーダルを見たかチェック
+                modal_seen = request.cookies.get('modal_seen_today')
                 
-                print(f"--- ログイン成功 (user.id: {user.id}) ---")
-                print(f"現在のセッション: {session}")
-                has_visited = request.cookies.get('first_visit')
+                # モーダルを表示するかどうかのフラグ
+                show_modal = False
+                if not modal_seen:
+                    show_modal = True
 
-                if has_visited:
-                    # Cookieがある場合: 2回目以降のアクセス
-                    # 通常のメインコンテンツページにリダイレクトする
-                    return redirect(url_for('input'))
-                else:
-                    # Cookieがない場合: 初回アクセス
-                    # 初回起動時のみ表示するページ（テンプレート）をレンダリングする
-                    response = make_response(render_template('input.html',today=today,active_page='input'))
+                # レスポンスの作成
+                today = date.today()
+                response = make_response(render_template(
+                    'input.html',
+                    today=today,
+                    active_page='input',
+                    show_modal=show_modal  # テンプレートに渡す
+                ))
 
-                    # 2. Cookieを設定
-                    # 'first_visit'というキーで値を保存し、有効期限を長めに設定する（例: 1年後）
-                    # max_ageは秒単位 (365日 * 24時間 * 60分 * 60秒)
+                # モーダルを表示する場合、当日中のみ有効なCookieをセット
+                if show_modal:
                     JST = timezone(timedelta(hours=+9))
                     now = datetime.now(JST)
+                    # 翌日の0時0分0秒を計算
                     tomorrow = now.date() + timedelta(days=1)
                     expiry_time = datetime(tomorrow.year, tomorrow.month, tomorrow.day, tzinfo=JST)
+                    
                     response.set_cookie(
-                        'first_visit', 
+                        'modal_seen_today', 
                         'true', 
-                        expires=expiry_time, # 翌日の0時を設定
+                        expires=expiry_time, 
                         httponly=True
                     )
-                    
-                    # 3. Cookieを設定したレスポンスを返す
-                    return response
                 
-            else: # ログイン失敗
-                print(f"--- ログイン失敗: ユーザー '{username}' が見つかりません ---")
+                return response
+                
+            else:
                 return render_template('login.html', error="ユーザーが見つかりません。")
 
         except Exception as e:

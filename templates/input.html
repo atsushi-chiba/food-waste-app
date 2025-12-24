@@ -10,16 +10,13 @@
 </head>
 <body>
     <div id="welcomeModal" class="modal-overlay {% if show_modal %}is-active{% endif %}">
-        <div class="modal-content">
-            <button class="modal-close" id="closeModalButton">&times;</button>
-            
-            <h1>昨日の結果</h1>
-            
-            <div class="textBox">{{ yesterday_points | default('0P GET') }}</div>
-            <p>ポイント数はポイントタブから確認できます。</p>
-
-        </div>
+    <div class="modal-content">
+        <button class="modal-close" id="closeModalButton">&times;</button>
+        <h1>昨日の結果</h1>
+        <div class="textBox">{{ yesterday_points | default('0P GET') }}</div>
+        <p>ポイント数はポイントタブから確認できます。</p>
     </div>
+</div>
 
     <div class="container">
         <h2>今日({{ today }})のデータを入力</h2>
@@ -88,5 +85,5 @@
     
     {% if show_modal %}
     <script src="{{ url_for('static', filename='js/modal_script.js') }}"></script>
-    {% endif %}</body>
+    {% endif %}
 </html>
