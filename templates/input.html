@@ -19,7 +19,13 @@
 </div>
 
     <div class="container">
-        <h2>今日({{ today }})のデータを入力</h2>
+        <div class="page-header">
+            <i class="fas fa-edit header-icon"></i>
+            <div class="header-text">
+                <h2>今日の記録</h2>
+                <span class="header-date">{{ today }}</span>
+            </div>
+        </div>
 
         <form method="post" class="input-form" action="/input">
             
@@ -70,7 +76,7 @@
             <div class="card">
                 <div class="form-group">
                     <label for="dish2">余りもの</label>
-                    <input type="text" id="dish2" name="item_name" placeholder="例: カレーライス、牛乳" required />
+                    <input type="text" id="dish2" name="item_name" placeholder="例: 人参、玉ねぎ" required />
                 </div>
                 
             </div>

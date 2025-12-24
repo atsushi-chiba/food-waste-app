@@ -17,10 +17,42 @@ body {
     box-sizing: border-box; /* paddingを含めて幅100%にする */
 }
 
-h2 {
-    font-size: 1.2em;
-    color: #333;
+/* ヘッダー全体のレイアウト */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 25px;
+    gap: 12px;
+}
+
+/* アイコンの装飾 */
+.header-icon {
+    font-size: 1.5rem;
+    color: #28a745; /* テーマカラーの緑 */
+    background: #e9f5ff;
+    padding: 10px;
+    border-radius: 50%;
+}
+
+.header-text {
+    text-align: left;
+}
+
+/* タイトル（上書き） */
+h2 {
+    font-size: 1.3em;
+    color: #333;
+    margin: 0; /* 余白をリセット */
+    font-weight: 800;
+}
+
+/* 日付のサブタイトル */
+.header-date {
+    font-size: 0.85em;
+    color: #888;
+    display: block;
+    margin-top: 2px;
 }
 
 /* =======================================
