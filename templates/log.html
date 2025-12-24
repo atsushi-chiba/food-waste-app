@@ -20,23 +20,14 @@
         </header>
         
         <main class="log-main-content"> 
-            <!--  
-            <div class="daily-navigation">
-                {% for day in week_dates %}
-                    <a href="{{ url_for('log', date=day.date|string) }}" 
-                       class="day-card {% if day.date == today %}today{% endif %}">
-                        <span class="day-name">{{ day.weekday_jp }}</span>
-                        <span class="day-number">{{ day.day_num }}</span>
-                    </a>
-                {% endfor %}
-            </div>
-            -->
             <h1 class="section-title">週間フードロス分析</h1>
 
             <div class="stats-content">
                 <div class="chart-container card">
                     <h3>日別廃棄量 (グラム)</h3>
-                    <canvas id="dailyLossChart"></canvas> 
+                    <div class="canvas-wrapper">
+                        <canvas id="dailyLossChart"></canvas> 
+                    </div>
                 </div>
 
                 <div class="table-container card"> 
@@ -59,14 +50,12 @@
             </div>
             
             <p id="noDataMessage" style="display: none; text-align: center;">この週の記録はありません。</p>
-            
         </main>
+
+        {% include 'footer.html' %}
+    </div> 
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='js/log_stats.js') }}"></script>
-    
-    {% include 'footer.html' %}
-    </div> 
-
 </body>
 </html>

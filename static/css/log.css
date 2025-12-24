@@ -1,11 +1,14 @@
+/* 全要素のサイズ計算を統一 */
+* {
+    box-sizing: border-box;
+}
+
 :root {
-    --primary-color: #4CAF50; /* 緑 */
-    --secondary-color: #FFC107; /* 黄色 */
+    --primary-color: #4CAF50;
     --background-light: #f5f5f5;
     --text-dark: #333;
     --border-color: #ddd;
     --card-bg: #fff;
-    --today-color: #2196F3; /* 青 */
 }
 
 body {
@@ -14,142 +17,84 @@ body {
     color: var(--text-dark);
     margin: 0;
     padding: 0;
+    overflow-x: hidden; /* 横揺れ防止 */
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px; /* モバイル用の余白 */
+    width: 100%;
 }
 
 .log-main-content {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    width: 100%;
 }
 
 .section-title {
     color: var(--primary-color);
     text-align: center;
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 1.8em;
+    font-size: 1.5rem;
+    margin: 10px 0;
 }
 
-/* --- ヘッダーと週ナビゲーションのスタイル --- */
+/* ヘッダー */
 .header {
     background-color: var(--card-bg);
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    padding: 15px 20px;
-    margin-bottom: 20px;
+    padding: 15px;
+    margin-bottom: 10px;
+    width: 100%;
 }
 
 .week-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
 }
 
 .week-range-text {
+    font-size: 1rem;
     margin: 0;
-    font-size: 1.4em;
-    font-weight: bold;
-    color: var(--text-dark);
-    text-align: center;
     flex-grow: 1;
+    text-align: center;
 }
 
 .nav-button {
     background-color: var(--primary-color);
     color: white;
-    padding: 8px 15px;
+    padding: 8px 12px;
     border-radius: 8px;
     text-decoration: none;
-    font-weight: bold;
-    transition: background-color 0.3s;
-    white-space: nowrap; /* テキストの折り返しを防ぐ */
+    font-size: 0.85rem;
+    white-space: nowrap;
 }
 
-.nav-button:hover {
-    background-color: #388E3C; /* primary-colorの少し濃い色 */
-}
-
-/* --- 日別ナビゲーション/カレンダー風表示のスタイル --- */
-.daily-navigation {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 10px;
-    background-color: var(--card-bg);
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    text-align: center;
-}
-
-.day-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 5px;
-    border-radius: 8px;
-    border: 2px solid var(--border-color);
-    text-decoration: none;
-    color: var(--text-dark);
-    transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
-}
-
-.day-card:hover {
-    background-color: #eee;
-    transform: translateY(-2px);
-}
-
-.day-card.today {
-    background-color: var(--today-color);
-    border-color: var(--today-color);
-    color: var(--card-bg); /* 白い文字 */
-    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
-}
-
-.day-card.today:hover {
-    background-color: #1976D2;
-    border-color: #1976D2;
-}
-
-.day-name {
-    font-size: 0.9em;
-    font-weight: bold;
-}
-
-.day-number {
-    font-size: 1.5em;
-    font-weight: bolder;
-    margin-top: 3px;
-}
-
-
-/* --- 統計コンテンツのスタイル --- */
+/* 統計エリア */
 .stats-content {
     display: grid;
-    grid-template-columns: 1fr; /* モバイルファースト */
+    grid-template-columns: 1fr; /* モバイルは1列 */
     gap: 20px;
+    width: 100%;
 }
 
 .card {
     background-color: var(--card-bg);
-    padding: 20px;
+    padding: 15px;
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
 }
 
-.chart-container h3,
-.table-container h3 {
-    color: var(--primary-color);
-    border-bottom: 2px solid var(--primary-color);
-    padding-bottom: 5px;
-    margin-top: 0;
-    margin-bottom: 15px;
+.canvas-wrapper {
+    position: relative;
+    height: 300px; /* モバイルでのグラフ高さ */
+    width: 100%;
 }
 
 /* --- テーブルのスタイル --- */
@@ -160,7 +105,7 @@ body {
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 500px; /* 小さすぎる画面での崩れを防ぐ */
+    min-width: 400px; /* 小さすぎる画面での崩れを防ぐ */
 }
 
 .data-table th,
@@ -194,15 +139,21 @@ body {
     border-radius: 12px;
 }
 
-/* --- メディアクエリ: PC/タブレット向けのレイアウト --- */
+/* PC向け設定 */
 @media (min-width: 768px) {
-    .stats-content {
-        /* PCではグラフとテーブルを2カラムで表示 */
-        grid-template-columns: 2fr 3fr; 
+    .container {
+        padding: 20px;
     }
-    
-    .chart-container {
-        /* グラフの高さをある程度確保 */
-        height: 400px; 
+    .section-title {
+        font-size: 1.8rem;
+    }
+    .week-range-text {
+        font-size: 1.4rem;
+    }
+    .stats-content {
+        grid-template-columns: 2fr 3fr; /* PCは2列 */
+    }
+    .canvas-wrapper {
+        height: 400px;
     }
 }
