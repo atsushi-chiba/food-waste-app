@@ -60,3 +60,12 @@ main p{
     font-weight: bold;
     box-sizing: border-box;
 }
+
+@media (min-width: 768px) {
+    main {
+        max-width: 700px; /* アカウント情報の表示幅を拡張 */
+    }
+    .info-group span {
+        font-size: 1.3em; /* 登録情報をより大きく */
+    }
+}

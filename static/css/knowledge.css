@@ -258,3 +258,20 @@ body.modal-open {
     color: #888;
     text-align: center;
 }
+
+@media (min-width: 768px) {
+    main {
+        max-width: 850px; /* 一覧の幅を拡張 */
+    }
+    .knowledge-list-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* 2列に並べる */
+        gap: 20px;
+    }
+    .knowledge-item {
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 20px;
+        background-color: #fff; /* カード状にして見やすく */
+    }
+}

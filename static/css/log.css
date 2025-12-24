@@ -144,6 +144,10 @@ body {
         grid-template-columns: 2fr 3fr;
     }
     .canvas-wrapper {
-        height: 400px;
+        height: 450px; /* グラフの高さをさらに大きく */
+    }
+    .data-table th, .data-table td {
+        padding: 15px; /* テーブルの各セルを大きく */
+        font-size: 1rem;
     }
 }
