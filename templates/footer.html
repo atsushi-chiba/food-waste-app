@@ -1,15 +1,15 @@
 <footer class="bottom-nav">
-    <a href="{{ url_for('input') }}" class="nav-item {% if active_page == 'input' %}active{% endif %}">
-        <i class="fas fa-edit"></i>
-        <span>入力</span>
+    <a href="{{ url_for('knowledge_bp.knowledge') }}" class="nav-item {% if active_page == 'knowledge' %}active{% endif %}">
+        <i class="fas fa-lightbulb"></i>
+        <span>知識</span>
     </a>
     <a href="{{ url_for('log') }}" class="nav-item {% if active_page == 'log' %}active{% endif %}">
         <i class="fas fa-list-alt"></i>
         <span>記録</span>
     </a>
-    <a href="{{ url_for('knowledge_bp.knowledge') }}" class="nav-item {% if active_page == 'knowledge' %}active{% endif %}">
-        <i class="fas fa-lightbulb"></i>
-        <span>知識</span>
+    <a href="{{ url_for('input') }}" class="nav-item {% if active_page == 'input' %}active{% endif %}">
+        <i class="fas fa-edit"></i>
+        <span>入力</span>
     </a>
     <a href="{{ url_for('points') }}" class="nav-item {% if active_page == 'points' %}active{% endif %}">
         <i class="fas fa-gift"></i>

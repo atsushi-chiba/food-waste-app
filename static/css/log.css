@@ -1,3 +1,5 @@
+/* static/css/log.css */
+
 /* 全要素のサイズ計算を統一 */
 * {
     box-sizing: border-box;
@@ -17,14 +19,16 @@ body {
     color: var(--text-dark);
     margin: 0;
     padding: 0;
-    overflow-x: hidden; /* 横揺れ防止 */
+    overflow-x: hidden; /* 画面全体の横揺れを防止 */
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 10px; /* モバイル用の余白 */
+    padding: 10px; 
     width: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .log-main-content {
@@ -38,7 +42,7 @@ body {
     color: var(--primary-color);
     text-align: center;
     font-size: 1.5rem;
-    margin: 10px 0;
+    margin: 0 0 10px 0; /* タイトル下の余白を調整 */
 }
 
 /* ヘッダー */
@@ -78,7 +82,7 @@ body {
 /* 統計エリア */
 .stats-content {
     display: grid;
-    grid-template-columns: 1fr; /* モバイルは1列 */
+    grid-template-columns: 1fr;
     gap: 20px;
     width: 100%;
 }
@@ -88,55 +92,41 @@ body {
     padding: 15px;
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    width: 100%;
+    width: 100%; /* 親のpaddingを除いた100%に収まる */
 }
 
 .canvas-wrapper {
     position: relative;
-    height: 300px; /* モバイルでのグラフ高さ */
+    height: 250px; /* モバイルでは少し低めにして収まりを良くする */
     width: 100%;
 }
 
 /* --- テーブルのスタイル --- */
 .table-scroll {
-    overflow-x: auto; /* テーブルが画面幅を超えたらスクロール可能に */
+    width: 100%;
+    overflow-x: auto; /* 横幅が足りない時だけテーブル内をスクロール */
+    -webkit-overflow-scrolling: touch; /* iOS用スムーズスクロール */
 }
 
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 400px; /* 小さすぎる画面での崩れを防ぐ */
+    min-width: 100%; /* 400pxから100%に変更し、横スクロールを解消 */
 }
 
 .data-table th,
 .data-table td {
-    padding: 12px 15px;
+    padding: 10px 8px; /* パディングを少し詰める */
     text-align: left;
     border-bottom: 1px solid var(--border-color);
+    font-size: 0.85rem; /* モバイル向けに微調整 */
 }
 
 .data-table th {
-    background-color: #E8F5E9; /* primary-colorの薄い色 */
+    background-color: #E8F5E9;
     color: var(--text-dark);
     font-weight: bold;
     text-transform: uppercase;
-    font-size: 0.9em;
-}
-
-.data-table tr:hover {
-    background-color: #f1f1f1;
-}
-
-/* データなしメッセージのスタイル */
-#noDataMessage {
-    margin-top: 30px;
-    padding: 20px;
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #999;
-    background-color: var(--card-bg);
-    border: 2px dashed var(--border-color);
-    border-radius: 12px;
 }
 
 /* PC向け設定 */
@@ -151,7 +141,7 @@ body {
         font-size: 1.4rem;
     }
     .stats-content {
-        grid-template-columns: 2fr 3fr; /* PCは2列 */
+        grid-template-columns: 2fr 3fr;
     }
     .canvas-wrapper {
         height: 400px;

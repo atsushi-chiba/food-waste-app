@@ -120,174 +120,103 @@ h1 {
 }
 
 
-/* --------------------------------------- */
-/* 4. モーダル (詳細画面) */
-/* --------------------------------------- */
-.detail-modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.6); 
-    padding-top: 50px; /* 少し上から表示 */
-}
-
-.detail-content {
-    background-color: #fefefe;
-    margin: 5% auto;
-    padding: 25px;
-    width: 90%;
-    max-width: 500px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    position: relative;
-}
-
-.detail-content h2 {
-    font-size: 1.3em;
-    margin-top: 0;
-    margin-bottom: 10px;
-}
-.detail-content h3 {
-    font-size: 1em;
-    color: #555;
-    font-weight: normal;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
-}
-.detail-content p {
-    line-height: 1.6;
-}
-
-.close-btn {
-    color: #555;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    line-height: 1;
-    position: absolute;
-    top: 10px;
-    right: 15px;
-}
-
-.close-btn:hover,
-.close-btn:focus {
-    color: #000;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-/* モーダル表示中のbodyのスクロールを止める */
-.modal-open {
-    overflow: hidden;
-}
-
-/* モーダルオーバーレイの基本スタイル */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.75); /* 背景を少し濃く */
-    display: none; /* 初期状態では非表示 */
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none; /* JSで display: flex に切り替え */
     justify-content: center;
     align-items: center;
-    z-index: 1000; 
+    z-index: 2000;
     opacity: 0;
-    transition: opacity 0.3s ease-in-out; 
+    transition: opacity 0.3s ease;
+    padding: 20px; /* モバイル時の余白 */
+    box-sizing: border-box;
 }
 
-/* JavaScriptで追加するクラス */
 .modal-overlay.is-active {
     display: flex;
     opacity: 1;
 }
 
-/* モーダルコンテンツのコンテナ */
+/* モーダル本体 */
 .modal-content {
-    background-color: #ffffff;
-    padding: 0; /* ヘッダーとコンテンツでパディングを分けるため0に設定 */
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    max-width: 90%;
-    width: 500px; /* 少し大きめに */
+    background-color: #fff;
+    width: 100%;
+    max-width: 500px; /* PCでの最大幅 */
+    max-height: 80vh; /* 画面の高さの80%を上限 */
+    border-radius: 16px;
     position: relative;
-    overflow: hidden; /* 角丸からはみ出さないように */
-    
-    /* スケールアップアニメーションの準備 */
+    overflow-y: auto; /* 内容が長い場合に内部スクロール */
     transform: scale(0.9);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
-/* モーダル表示時にコンテンツを拡大 */
 .modal-overlay.is-active .modal-content {
     transform: scale(1);
 }
 
-/* モーダルヘッダー（カテゴリ名表示部分） */
+/* ヘッダー */
 .modal-header {
     padding: 15px 20px;
     color: white;
-    font-size: 1.2em;
     font-weight: bold;
     text-align: left;
-    /* カテゴリ別の色設定はJavaScriptで動的に行うか、以下のクラスを使用 */
+    background-color: #6c757d; /* デフォルト色 */
+    color: white;
 }
 
-/* カテゴリ別ヘッダー色 (例) */
-.category-料理 {
-    background-color: #ff6f61; /* Coral Red */
-}
-.category-掃除 {
-    background-color: #5b92e5; /* Sky Blue */
-}
-.category-その他 {
-    background-color: #ffa500; /* Orange */
-}
+/* カテゴリ別カラー */
+.category-料理 { background-color: #ff6f61; }
+.category-掃除 { background-color: #5b92e5; }
+.category-可食部 { background-color: #28a745; }
+.category-その他 { background-color: #ffa500; }
 
-/* モーダルボディ（豆知識の詳細コンテンツ） */
+/* ボディ */
 .modal-body {
     padding: 20px;
     text-align: left;
-    color: #333;
 }
 
 .modal-body h2 {
-    font-size: 1.5em;
-    color: #2c3e50;
-    margin-top: 0;
+    font-size: 1.2em;
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.modal-body h3 {
+    font-size: 1em;
+    color: #666;
     margin-bottom: 15px;
-    border-bottom: 2px solid #ecf0f1;
-    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
 }
 
 .modal-body p {
-    font-size: 1.05em;
     line-height: 1.6;
+    font-size: 0.95em;
+    margin: 0;
+    white-space: pre-wrap; /* 改行を反映 */
 }
 
 /* 閉じるボタン */
 .modal-close {
     position: absolute;
-    top: 5px;
-    right: 10px;
-    font-size: 30px;
-    line-height: 1;
-    color: white; /* ヘッダー色と合わせて白に */
-    cursor: pointer;
-    background: none;
+    top: 8px;
+    right: 12px;
+    font-size: 28px;
     border: none;
-    padding: 5px;
-    transition: color 0.2s ease;
-    z-index: 1010;
+    background: none;
+    color: white;
+    cursor: pointer;
+    z-index: 10;
 }
 
-.modal-close:hover {
-    color: #f1f1f1;
+/* 背景スクロール固定用クラス */
+body.modal-open {
+    overflow: hidden;
 }

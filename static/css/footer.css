@@ -1,11 +1,13 @@
+/* static/css/footer.css */
 body {
-    padding-bottom: 80px; /* ボトムナビゲーションの高さ分 */
+    padding-bottom: 80px; 
     padding-top: 20px;
 }
+
 footer a:visited {
     color: inherit;
-
 }
+
 .bottom-nav {
     display: flex;
     justify-content: space-around;
@@ -13,11 +15,13 @@ footer a:visited {
     position: fixed;
     bottom: 0;
     left: 0;
-    width: 100vw;
+    width: 100%; /* 100vwから100%へ変更 */
     background-color: white;
     border-top: 1px solid #e0e0e0;
     padding: 0.6em 0;
     box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+    z-index: 1000;
+    box-sizing: border-box; /* パディングを含めて100%にする */
 }
 
 .nav-item {
@@ -44,11 +48,10 @@ footer a:visited {
     display: inline-block;
 }
 
-/* ★アクティブ時のスタイル★ */
 .nav-item.active {
-    color: #333; /* ★アクティブ時のアイコンの色 (黒) */
+    color: #333;
 }
 .nav-item.active span {
-    background-color: #333; /* ★アクティブ時の文字の背景色 (黒) */
-    color: #fff; /* ★アクティブ時の文字の色 (白) */
+    background-color: #333;
+    color: #fff;
 }
