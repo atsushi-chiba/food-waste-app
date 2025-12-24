@@ -3,22 +3,20 @@ body {
     background-color: #f4f4f8;
     color: #333;
     margin: 0;
-    padding-top: 20px; /* 上部に余白 */
-    padding-bottom: 80px; /* ボトムナビゲーションの高さ分 */
+    padding-top: 20px;
+    padding-bottom: 80px;
 }
 header{
     text-align: center;
     margin-bottom: 20px;
 }
 .container {
-    padding: 0 15px; /* 左右に余白 */
+    padding: 0 15px;
     max-width: 500px;
     margin: 0 auto;
 }
 
-/* --------------------------------------- */
 /* 1. 統一されたカードスタイル */
-/* --------------------------------------- */
 .card {
     background-color: white;
     border-radius: 12px;
@@ -28,11 +26,9 @@ header{
     text-align: left;
 }
 
-/* --------------------------------------- */
 /* 2. 所持ポイントのステータスカード */
-/* --------------------------------------- */
 .points-status-card {
-    background-color: #28a745; /* 緑色 (MyDyson風のステータス表示) */
+    background-color: #28a745;
     color: white;
     text-align: center;
     padding: 30px 20px;
@@ -45,7 +41,7 @@ header{
 
 .current-points {
     margin: 0;
-    font-size: 3em; /* ポイント数を大きく表示 */
+    font-size: 3em;
     font-weight: bold;
 }
 .current-points .unit {
@@ -54,9 +50,7 @@ header{
     margin-left: 5px;
 }
 
-/* --------------------------------------- */
 /* 3. 交換所リスト */
-/* --------------------------------------- */
 .exchange-list-card .card-title {
     margin: 0 0 15px 0;
     font-size: 1.2em;
@@ -100,9 +94,8 @@ header{
     color: #555;
 }
 
-/* 交換ボタン */
 .trade-button {
-    background-color: #007bff; /* 青色 (セカンダリ強調色) */
+    background-color: #007bff;
     color: white;
     border: none;
     border-radius: 6px;
@@ -117,93 +110,60 @@ header{
     background-color: #0056b3;
 }
 
-
-/* --------------------------------------- */
-/* 4. モーダル (デザイン微調整) */
-/* --------------------------------------- */
-.modal {
-    display: none; /* 初期状態では非表示 */
-    position: fixed; /* 画面に固定 */
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.6); /* 背景を少し濃い半透明の黒にする */
-}
-
-/* モーダルの中身（確認画面） */
+/* 4. モーダル調整 (modal_style.css を補完) */
 .modal-content {
-    background-color: #fefefe;
-    margin: 20% auto; /* 画面中央付近に配置を調整 */
-    padding: 30px;
-    border: none; /* 枠線を削除 */
-    width: 90%; 
-    max-width: 400px;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3); /* 影を強調 */
+    width: 300px !important; /* 幅をさらに小さく固定 */
+    max-width: 85%;         /* 画面が非常に小さい場合でも余白を確保 */
+    padding: 20px 25px !important; /* 上下の余白を大幅に削減 */
+    border-radius: 10px;    /* 角の丸みを少し控えめに */
 }
 
-.modal-content h2 {
-    margin-top: 0;
-    margin-bottom: 15px;
+/* ポイント表示部分をよりコンパクトに */
+.modal-content .textBox {
+    display: inline-block;
+    padding: 2px 12px;      /* パディングを小さく */
+    margin: 8px 3px;
+    font-size: 1.3em;       /* フォントサイズを少し抑える */
+    font-weight: bold;
+    color: #007bff;
+    background-color: #e9f5ff;
+    border-radius: 6px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-.modal-content p {
-    font-size: 1.1em;
-    margin-bottom: 25px;
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;               /* ボタン間の隙間を狭く */
+    margin-top: 15px;       /* 上部との間隔を狭く */
 }
 
 .modal-content button {
-    padding: 12px 20px;
-    margin: 5px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1em;
-    width: 45%; /* ボタンを横並びにする */
+    padding: 10px 0;        /* ボタン自体の高さも低く */
+    border-radius: 6px;
+    font-size: 0.95em;      /* 文字を少し小さく */
+    flex: 1;
 }
 
-#confirm-yes {
-    background-color: #28a745;
-    color: white;
-    border: 1px solid #28a745;
+/* モバイル対応: 画面幅が狭い時でも適切に表示 */
+@media (max-width: 480px) {
+    .modal-content {
+        width: 280px !important; /* スマホではさらに一回り小さく */
+        padding: 15px 20px !important;
+    }
 }
 
-#confirm-no {
-    background-color: #f0f0f0;
-    color: #333;
-    border: 1px solid #ccc;
-}
-
-/* 閉じるボタン */
-.close-button {
-    color: #555;
-    float: right;
-    font-size: 24px;
-    font-weight: normal;
-    line-height: 1;
-}
-
-.close-button:hover,
-.close-button:focus {
-    color: #000;
-    text-decoration: none;
-    cursor: pointer;
-}
-
+/* 5. トースト通知 */
 #toast-notification {
     position: fixed;
-    bottom: 90px; /* フッター (bottom-nav) のすぐ上に配置 */
+    bottom: 90px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #333; /* ダーク背景 */
+    background-color: #333;
     color: white;
     padding: 12px 20px;
     border-radius: 8px;
-    z-index: 1001; /* モーダルより手前 */
+    z-index: 1001;
     text-align: center;
     min-width: 250px;
     opacity: 1;
@@ -211,7 +171,6 @@ header{
     visibility: visible;
 }
 
-/* 非表示状態 */
 .toast-hidden {
     opacity: 0 !important;
     visibility: hidden !important;
