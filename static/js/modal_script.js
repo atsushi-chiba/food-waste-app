@@ -3,8 +3,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const closeButton = document.getElementById('closeModalButton');
 
     // app.py で show_modal=True の時だけこのスクリプトが読み込まれる
-    if (modal && modal.style.display !== 'none') {
-        modal.classList.add('is-active'); 
+    if (modal) {
+    modal.classList.add('is-active');
     }
 
     const closeModal = () => {
