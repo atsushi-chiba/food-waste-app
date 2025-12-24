@@ -13,28 +13,38 @@ footer a:visited {
     position: fixed;
     bottom: 0;
     left: 0;
-    width: 100vw; /* ★修正: ビューポート幅いっぱいに広げる */
+    width: 100vw;
     background-color: white;
     border-top: 1px solid #e0e0e0;
     padding: 0.6em 0;
     box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
 }
+
 .nav-item {
+    /* ★ 修正ポイント: flex-basisを0にし、flex-growを1にすることで均等分割します */
+    flex: 1 0 0; 
     display: flex;
     flex-direction: column;
     align-items: center;
     text-decoration: none;
-    color: #888; /* ★非アクティブ時のデフォルト色 (グレー) */
+    color: #888;
+    /* ★ 追加: クリック範囲を広げるために幅を100%に */
+    width: 100%;
 }
+
 .nav-item i {
-    font-size: 1.5em; /* アイコンのサイズ */
+    font-size: 1.5em;
     margin-bottom: 4px;
 }
+
 .nav-item span {
-    font-size: 0.8em; /* 文字のサイズ */
-    padding: 0.8em 1em; /* ★文字の背景に余白を持たせる */
-    border-radius: 12px; /* ★角を丸める */
-    background-color: transparent; /* ★普段は透明 */
+    font-size: 0.75em; /* ★ 微調整: 文字がはみ出さないよう少し小さく */
+    padding: 0.4em 0.8em; /* ★ 修正: 横幅を固定するために左右の余白を調整 */
+    border-radius: 12px;
+    background-color: transparent;
+    /* ★ 追加: 文字が長くても折り返さない、または中央揃えを維持 */
+    text-align: center;
+    display: inline-block;
 }
 
 /* ★アクティブ時のスタイル★ */
