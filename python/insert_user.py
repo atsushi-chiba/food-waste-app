@@ -6,6 +6,8 @@ from sqlalchemy.orm import sessionmaker
 from models import Base, User, LossReason, FoodLossRecord # 必要なモデルをインポート
 import datetime
 import hashlib
+import logging
+logger = logging.getLogger(__name__) 
 
 # --- データベース接続設定 (database.pyと同じロジックを使用) ---
 # os.path.dirname(__file__) は現在のファイルのディレクトリ (例: C:/.../social-implementation/python)
@@ -34,7 +36,7 @@ def add_test_data():
             )
             session.add(test_user)
             session.commit()
-            print("Test user created.")
+            logger.info("Test user created.")
 
         # 2. 廃棄理由（「期限切れ」）のIDを取得
         # ※ init_db()で初期データが投入されていることを前提とします
@@ -42,7 +44,7 @@ def add_test_data():
         eaten_reason = session.query(LossReason).filter_by(reason_text="食べ残し").first()
         
         if not expired_reason or not eaten_reason:
-            print("Error: Loss reasons not found. Please run database initialization.")
+            logger.error("Error: Loss reasons not found. Please run database initialization.")
             return
 
         # 3. 新しいフードロス記録を作成
@@ -64,7 +66,7 @@ def add_test_data():
         # 4. セッションに追加し、コミット
         session.add_all([record1, record2])
         session.commit()
-        print("Food loss test data added successfully for test_user!")
+        logger.info("Food loss test data added successfully for test_user!")
         
     except Exception as e:
         session.rollback()

@@ -1,5 +1,8 @@
 # app.py 
 from flask import Flask, request, jsonify, render_template, make_response, redirect, url_for, session
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 from database import init_db, get_db
 from services import ( 
     register_new_user, 
@@ -38,15 +41,15 @@ def login_required(func):
     def wrapper(*args, **kwargs):
         
         # --- ★デバッグ用に追加 (ここから)★ ---
-        print(f"--- デコレータ実行 ({func.__name__}) ---")
-        print(f"現在のセッション: {session}")
+        logger.debug(f"--- デコレータ実行 ({func.__name__}) ---")
+        logger.debug(f"現在のセッション: {session}")
         # --- ★デバッグ用に追加 (ここまで)★ ---
 
         if 'user_id' not in session:
-            print("セッションに user_id が見つからないため /login へリダイレクトします") # ★デバッグ用
+            logger.debug("セッションに user_id が見つからないため /login へリダイレクトします") # ★デバッグ用
             return redirect(url_for('login'))
         
-        print("セッションOK。ページを表示します。") # ★デバッグ用
+        logger.debug("セッションOK。ページを表示します。") # ★デバッグ用
         return func(*args, **kwargs)
     
     wrapper.__name__ = func.__name__ 
@@ -101,7 +104,7 @@ def register():
             return render_template('register.html', error=str(e))
         except Exception as e:
             # その他のDBエラーなど
-            print(f"致命的なエラーが発生しました: {e}") # ⬅︎ 追加
+            logger.exception(f"致命的なエラーが発生しました: {e}")
             db.rollback()
             return render_template('register.html', error=f"エラーが発生しました: {str(e)}")
         finally:
@@ -153,7 +156,7 @@ def input():
     # POST処理がスキップされた場合（GETの場合）のみ、このロジックが実行される
     success_message = request.args.get('success_message')
     
-    print(f"--- GETリクエスト /input ページ表示 ---") # ★デバッグ用
+    logger.debug(f"--- GETリクエスト /input ページ表示 ---") # ★デバッグ用
     
     return render_template('input.html',
                            today=today,
@@ -234,7 +237,7 @@ def points():
                                total_points=total_points,  # ★ テンプレートに渡す ★
                                active_page='points')
     except Exception as e:
-        print(f"ポイント取得エラー: {e}")
+        logger.exception(f"ポイント取得エラー: {e}")
         return render_template('points.html', 
                                total_points=0, 
                                error_message="ポイント情報の取得に失敗しました。",
@@ -283,7 +286,7 @@ def login():
         username = request.form.get('username')
         
         # ★ デバッグ用: POSTされたユーザー名を表示してみる ★
-        print(f"--- POSTリクエスト受信: ユーザー名 '{username}' ---")
+        logger.debug(f"--- POSTリクエスト受信: ユーザー名 '{username}' ---")
 
         try:
             user = get_user_by_username(db, username) 
@@ -293,8 +296,8 @@ def login():
                 
                 add_test_loss_records(db, user.id) 
                 
-                print(f"--- ログイン成功 (user.id: {user.id}) ---")
-                print(f"現在のセッション: {session}")
+                logger.info(f"--- ログイン成功 (user.id: {user.id}) ---")
+                logger.debug(f"現在のセッション: {session}")
                 has_visited = request.cookies.get('first_visit')
 
                 if has_visited:
@@ -324,18 +327,18 @@ def login():
                     return response
                 
             else: # ログイン失敗
-                print(f"--- ログイン失敗: ユーザー '{username}' が見つかりません ---")
+                logger.info(f"--- ログイン失敗: ユーザー '{username}' が見つかりません ---")
                 return render_template('login.html', error="ユーザーが見つかりません。")
 
         except Exception as e:
-            print(f"--- エラー発生: {str(e)} ---")
+            logger.exception(f"--- エラー発生: {str(e)} ---")
             return render_template('login.html', error=f"エラーが発生しました: {str(e)}")
         finally:
             db.close()
     
     # GETリクエスト（ページにアクセスした）の場合
     # @login_required からのリダイレクトもここに来る
-    print(f"--- GETリクエスト /login ページ表示 ---")
+    logger.debug(f"--- GETリクエスト /login ページ表示 ---")
     return render_template('login.html')
 
 @app.route('/logout')

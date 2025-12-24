@@ -11,6 +11,8 @@ import json
 import os
 import datetime
 import pickle
+import logging
+logger = logging.getLogger(__name__) 
 
 #  データの前処理
 
@@ -19,7 +21,7 @@ def str_to_int(txt:str)->int:
     if(re.match(r'^[0-9]+$',txt) is not None):
         return int(txt)
     else:
-        print('this text includes some characters is not number')
+        logger.warning('this text includes some characters is not number')
         
 
 
@@ -27,10 +29,10 @@ def str_to_int(txt:str)->int:
   # パスワードがポリシーに適合するかチェック
 def password_checker(password:str)->bool:
     if(len(password) <8 or len(password) >16):
-        print("パスワードは8文字以上16文字以下で設定してください")
+        logger.warning("パスワードは8文字以上16文字以下で設定してください")
         return False
     if(re.search(r'[#,$,%,&]')!=None):
-        print("パスワードに使用できない文字が含まれています")
+        logger.warning("パスワードに使用できない文字が含まれています")
         return False
     else:
         if(re.search(r'[a-zA-Z]',password)==None):
@@ -54,10 +56,10 @@ def get_jsondata(url:str):
     response = requests.post(url, json={"key": "value"})
     if response.status_code == 200:
         json_data = response.json()
-        print(json_data)
+        logger.info(json_data)
         return json_data
     #うまく取得ができなかったとき、ステータスコードを表示
-    else:print(response.status_code)
+    else:logger.warning(response.status_code)
     return None
 
   #  データの統計
@@ -106,14 +108,14 @@ def  datastat_write(datastat:dataStat):
         # 6. 最終的なファイルパスを結合
         file_path = os.path.join(save_directory_path, filename)
     except Exception as e:
-        print("予期せぬエラーが発生しました: {e}")
+        logger.exception(f"予期せぬエラーが発生しました: {e}")
     try:
         with open(file_path,'w') as file:
             json.dump(data,file,indent=4)
     except IOError as e:
-        print(f"ファイルの書き込み中にエラーが発生しました: {e}")
+        logger.exception(f"ファイルの書き込み中にエラーが発生しました: {e}")
     except Exception as e:
-        print(f"予期せぬエラーが発生しました: {e}") 
+        logger.exception(f"予期せぬエラーが発生しました: {e}") 
 
   #データの読み込み※未完成
 def read_json(path:str)->dict:

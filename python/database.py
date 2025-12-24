@@ -3,6 +3,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base, User, LossReason, FoodLossRecord
 import os
+import logging
+logger = logging.getLogger(__name__) 
 
 # データベースファイルへのパスを定義
 # os.path.dirname(__file__) は現在のファイルのディレクトリパス (例: C:/.../social-implementation/python)
@@ -31,7 +33,7 @@ def init_db():
         os.makedirs(db_dir)
         
     Base.metadata.create_all(bind=engine)
-    print("Database tables created successfully!")
+    logger.info("Database tables created successfully!")
 
     # --- 既存 DB に新しい列がなければ追加（軽いマイグレーション） ---
     # SQLite では ALTER TABLE ADD COLUMN が使えるため、存在確認してから追加する
@@ -41,7 +43,7 @@ def init_db():
     if 'last_points_awarded_week_start' not in columns:
         with engine.connect() as conn:
             conn.execute(text("ALTER TABLE users ADD COLUMN last_points_awarded_week_start VARCHAR(10)"))
-            print("Added column users.last_points_awarded_week_start")
+            logger.info("Added column users.last_points_awarded_week_start")
 
     # 初期データを投入
     db = SessionLocal()
@@ -57,7 +59,7 @@ def init_db():
             ]
             db.add_all(reasons)
             db.commit()
-            print("Loss reasons added.")
+            logger.info("Loss reasons added.")
     finally:
         db.close()
 

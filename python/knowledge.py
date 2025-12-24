@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, current_app # current_appをイン
 import pandas as pd
 import os
 import numpy as np
+import logging
+logger = logging.getLogger(__name__) 
 
 # 1. Blueprintを定義 (変更なし)
 bp = Blueprint('knowledge_bp', __name__, url_prefix='/knowledge')
@@ -26,7 +28,7 @@ def load_knowledge_data():
         csv_file_path = os.path.join(csv_base_dir, file_name)
 
         if not os.path.exists(csv_file_path):
-            print(f"⚠️ 警告: ファイルが見つかりません: {csv_file_path}")
+            logger.warning(f"⚠️ 警告: ファイルが見つかりません: {csv_file_path}")
             continue
 
         try:
@@ -50,7 +52,7 @@ def load_knowledge_data():
             all_knowledge_data.append(df)
             
         except Exception as e:
-            print(f"🚨 ファイル '{file_name}' の処理中にエラーが発生しました。エラー詳細: {e}")
+            logger.exception(f"🚨 ファイル '{file_name}' の処理中にエラーが発生しました。エラー詳細: {e}")
             continue
             
     if not all_knowledge_data:
