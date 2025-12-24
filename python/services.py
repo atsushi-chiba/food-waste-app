@@ -1,10 +1,7 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 from models import User, FoodLossRecord, LossReason
-from schemas import LossRecordInput
-import hashlib
-from datetime import datetime, timedelta, date, time
-from typing import Dict, Any, List, Optional, Tuple
+from datetime import datetime, timedelta, date
+from typing import Dict, Any, List, Optional
 
 # main-test を優先した実装（競合で main-test のコードを採用）
 from statistics import (
@@ -15,11 +12,10 @@ from statistics import (
 
 # user 関連は既存の `user_service.py` を使う
 from user_service import (
+    get_user_profile as get_user_profile_internal,
+    register_new_user,
     get_user_by_username,
     get_user_by_id,
-    register_new_user,
-    update_user_points as update_user_points_internal,
-    get_user_profile as get_user_profile_internal,
 )
 
 
@@ -33,14 +29,16 @@ def get_user_profile(db: Session, user_id: int) -> Optional[Dict[str, Any]]:
 
 
 def add_new_loss_record_direct(db: Session, record_data: Dict[str, Any]) -> int:
-    reason = db.query(LossReason).filter_by(reason_text=record_data['reason_text']).first()
+    reason = (
+        db.query(LossReason).filter_by(reason_text=record_data["reason_text"]).first()
+    )
     if not reason:
         raise ValueError(f"無効な廃棄理由: {record_data['reason_text']}")
 
     new_record = FoodLossRecord(
-        user_id=record_data['user_id'],
-        item_name=record_data['item_name'],
-        weight_grams=record_data['weight_grams'],
+        user_id=record_data["user_id"],
+        item_name=record_data["item_name"],
+        weight_grams=record_data["weight_grams"],
         loss_reason_id=reason.id,
     )
 
@@ -52,9 +50,9 @@ def add_new_loss_record_direct(db: Session, record_data: Dict[str, Any]) -> int:
 
 # ポイント付与の設定（寛容モード）
 ONBOARDING_POINTS = 10
-MIN_RECORD_WEIGHT = 50          # g
-BASELINE_MIN = 300              # g
-MIN_REDUCTION_PERCENT = 5       # %
+MIN_RECORD_WEIGHT = 50  # g
+BASELINE_MIN = 300  # g
+MIN_REDUCTION_PERCENT = 5  # %
 MAX_WEEKLY_POINTS = 200
 
 
@@ -104,9 +102,10 @@ def calculate_weekly_points_logic(db: Session, user_id: int) -> Dict[str, Any]:
     # --- idempotency: 同じ週に対する二重付与を防ぐ ---
     from statistics import get_week_boundaries
     from datetime import datetime
+
     today = datetime.now()
     week_start_dt, _ = get_week_boundaries(today)
-    week_start_str = week_start_dt.strftime('%Y-%m-%d')
+    week_start_str = week_start_dt.strftime("%Y-%m-%d")
 
     user = db.get(User, user_id)
     if not user:
@@ -115,7 +114,7 @@ def calculate_weekly_points_logic(db: Session, user_id: int) -> Dict[str, Any]:
             "final_reduction_rate": round(final_reduction_rate * 100, 2),
             "rate_last_week": round(rate_last_week * 100, 2),
             "rate_baseline": round(rate_baseline * 100, 2),
-            "message": "user_not_found"
+            "message": "user_not_found",
         }
 
     # すでにその週に付与済みかをチェック
@@ -126,7 +125,7 @@ def calculate_weekly_points_logic(db: Session, user_id: int) -> Dict[str, Any]:
             "rate_last_week": round(rate_last_week * 100, 2),
             "rate_baseline": round(rate_baseline * 100, 2),
             "message": "already_awarded",
-            "week_start": week_start_str
+            "week_start": week_start_str,
         }
 
     # 付与処理をトランザクション内で実施
@@ -142,7 +141,7 @@ def calculate_weekly_points_logic(db: Session, user_id: int) -> Dict[str, Any]:
         "final_reduction_rate": round(final_reduction_rate * 100, 2),
         "rate_last_week": round(rate_last_week * 100, 2),
         "rate_baseline": round(rate_baseline * 100, 2),
-        "week_start": week_start_str
+        "week_start": week_start_str,
     }
 
 
@@ -169,22 +168,22 @@ def add_test_loss_records(db: Session, user_id: int) -> bool:
             item_name="牛乳 (期限切れ)",
             weight_grams=1000.0,
             loss_reason_id=reason_expired.id,
-            record_date=a_week_ago.isoformat()
+            record_date=a_week_ago.isoformat(),
         ),
         FoodLossRecord(
             user_id=user_id,
             item_name="カレーの食べ残し",
             weight_grams=350.5,
             loss_reason_id=reason_eaten.id,
-            record_date=a_week_ago.isoformat()
+            record_date=a_week_ago.isoformat(),
         ),
         FoodLossRecord(
             user_id=user_id,
             item_name="ご飯 (期限切れ)",
             weight_grams=500.0,
             loss_reason_id=reason_expired.id,
-            record_date=today.isoformat()
-        )
+            record_date=today.isoformat(),
+        ),
     ]
 
     db.add_all(records)
