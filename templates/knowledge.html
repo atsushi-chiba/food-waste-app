@@ -11,33 +11,29 @@
 <body>
 
     <main>
-        <!--
-        <h1>アレンジレシピ</h1>
-        <div class="textBox" >
-            <div class="knowledge-list-container">
-                
-                {% for item in knowledge_list %}
-                <div class="knowledge-item" data-target="detail-{{ item.id }}">
-                    <span class="title">{{ item.category }}</span> 
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        -->
-
         <h1>豆知識</h1>
         <div class="filter-buttons">
             <button class="filter-btn active" data-filter="料理">料理</button>
             <button class="filter-btn" data-filter="掃除">掃除</button>
+            <button class="filter-btn" data-filter="可食部">可食部</button>
             <button class="filter-btn" data-filter="その他">その他</button>
             <button class="filter-btn" data-filter="全て">全て表示</button>
         </div>
-        <div class="textBox" >
+
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="knowledge-search" placeholder="キーワードで検索（例：卵、皮）" />
+        </div>
+        
+        <div class="textBox">
             <div class="knowledge-list-container" id="knowledge-list-container-trivia">
-                
                 {% for item in knowledge_list %}
                 <div class="knowledge-item" data-target="detail-{{ item.id }}" data-category="{{ item.filter_group }}">
+                    {% if item.category %}
                     <span class="title">{{ item.category }}</span> 
+                    {% else %}
+                    <span class="title">{{ item.title }}</span> 
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
@@ -45,13 +41,23 @@
     </main>
 
     {% for item in knowledge_list %}
-    <div id="detail-{{ item.id }}" class="detail-modal">
-    <div class="detail-content">
-        <span class="close-btn">&times;</span>
-        <h2>廃棄部分：{{ item.category }}</h2>
-        <h3>再利用方法：{{ item.title }}</h3> 
-        <p>説明：{{ item.content }}</p> 
-    </div>
+    <div id="detail-{{ item.id }}" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div class="modal-header category-{{ item.filter_group }}">
+                {{ item.filter_group }}
+            </div>
+            <div class="modal-body">
+                {% if item.category %}
+                <h2>廃棄部分：{{ item.category }}</h2>
+                <h3>再利用方法：{{ item.title }}</h3> 
+                <p>{{ item.content }}</p> 
+                {% else %}
+                <h2>{{ item.title }}</h2> 
+                <p>{{ item.content }}</p> 
+                {% endif %}
+            </div>
+        </div>
     </div>
     {% endfor %}
 

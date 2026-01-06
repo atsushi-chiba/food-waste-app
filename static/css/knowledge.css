@@ -120,69 +120,158 @@ h1 {
 }
 
 
-/* --------------------------------------- */
-/* 4. モーダル (詳細画面) */
-/* --------------------------------------- */
-.detail-modal {
-    display: none;
+.modal-overlay {
     position: fixed;
-    z-index: 1000;
-    left: 0;
     top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.6); 
-    padding-top: 50px; /* 少し上から表示 */
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none; /* JSで display: flex に切り替え */
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    padding: 20px; /* モバイル時の余白 */
+    box-sizing: border-box;
 }
 
-.detail-content {
-    background-color: #fefefe;
-    margin: 5% auto;
-    padding: 25px;
-    width: 90%;
-    max-width: 500px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+.modal-overlay.is-active {
+    display: flex;
+    opacity: 1;
+}
+
+/* モーダル本体 */
+.modal-content {
+    background-color: #fff;
+    width: 100%;
+    max-width: 500px; /* PCでの最大幅 */
+    max-height: 80vh; /* 画面の高さの80%を上限 */
+    border-radius: 16px;
     position: relative;
+    overflow-y: auto; /* 内容が長い場合に内部スクロール */
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
-.detail-content h2 {
-    font-size: 1.3em;
-    margin-top: 0;
-    margin-bottom: 10px;
+.modal-overlay.is-active .modal-content {
+    transform: scale(1);
 }
-.detail-content h3 {
+
+/* ヘッダー */
+.modal-header {
+    padding: 15px 20px;
+    color: white;
+    font-weight: bold;
+    text-align: left;
+    background-color: #6c757d; /* デフォルト色 */
+    color: white;
+}
+
+/* カテゴリ別カラー */
+.category-料理 { background-color: #ff6f61; }
+.category-掃除 { background-color: #5b92e5; }
+.category-可食部 { background-color: #28a745; }
+.category-その他 { background-color: #ffa500; }
+
+/* ボディ */
+.modal-body {
+    padding: 20px;
+    text-align: left;
+}
+
+.modal-body h2 {
+    font-size: 1.2em;
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.modal-body h3 {
     font-size: 1em;
-    color: #555;
-    font-weight: normal;
+    color: #666;
     margin-bottom: 15px;
     border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
+    padding-bottom: 8px;
 }
-.detail-content p {
+
+.modal-body p {
     line-height: 1.6;
+    font-size: 0.95em;
+    margin: 0;
+    white-space: pre-wrap; /* 改行を反映 */
 }
 
-.close-btn {
-    color: #555;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    line-height: 1;
+/* 閉じるボタン */
+.modal-close {
     position: absolute;
-    top: 10px;
-    right: 15px;
-}
-
-.close-btn:hover,
-.close-btn:focus {
-    color: #000;
-    text-decoration: none;
+    top: 8px;
+    right: 12px;
+    font-size: 28px;
+    border: none;
+    background: none;
+    color: white;
     cursor: pointer;
+    z-index: 10;
 }
 
-/* モーダル表示中のbodyのスクロールを止める */
-.modal-open {
+/* 背景スクロール固定用クラス */
+body.modal-open {
     overflow: hidden;
+}
+
+/* --- 検索ボックスのスタイル --- */
+.search-container {
+    margin: 10px 0 20px 0;
+    position: relative;
+    width: 100%;
+}
+
+#knowledge-search {
+    width: 100%;
+    padding: 12px 15px 12px 40px; /* 左側にアイコン用の余白 */
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#knowledge-search:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.2);
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}
+
+/* 検索結果がゼロの場合のメッセージ用（必要に応じてJSで表示） */
+.no-result-message {
+    padding: 20px;
+    color: #888;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    main {
+        max-width: 850px; /* 一覧の幅を拡張 */
+    }
+    .knowledge-list-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* 2列に並べる */
+        gap: 20px;
+    }
+    .knowledge-item {
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 20px;
+        background-color: #fff; /* カード状にして見やすく */
+    }
 }

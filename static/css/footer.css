@@ -1,11 +1,13 @@
+/* static/css/footer.css */
 body {
-    padding-bottom: 80px; /* ボトムナビゲーションの高さ分 */
+    padding-bottom: 80px; 
     padding-top: 20px;
 }
+
 footer a:visited {
     color: inherit;
-
 }
+
 .bottom-nav {
     display: flex;
     justify-content: space-around;
@@ -13,37 +15,44 @@ footer a:visited {
     position: fixed;
     bottom: 0;
     left: 0;
-    width: 100vw; /* ★修正: ビューポート幅いっぱいに広げる */
+    width: 100%; /* 100vwから100%へ変更 */
     background-color: white;
     border-top: 1px solid #e0e0e0;
     padding: 0.6em 0;
     box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+    z-index: 1000;
+    box-sizing: border-box; /* パディングを含めて100%にする */
 }
+
 .nav-item {
+    flex: 1 0 0; 
     display: flex;
     flex-direction: column;
     align-items: center;
     text-decoration: none;
-    color: #888; /* ★非アクティブ時のデフォルト色 (グレー) */
+    color: #888;
+    width: 100%;
 }
+
 .nav-item i {
-    font-size: 1.5em; /* アイコンのサイズ */
+    font-size: 1.5em;
     margin-bottom: 4px;
 }
+
 .nav-item span {
-    font-size: 0.8em; /* 文字のサイズ */
-    padding: 0.8em 1em; /* ★文字の背景に余白を持たせる */
-    border-radius: 12px; /* ★角を丸める */
-    background-color: transparent; /* ★普段は透明 */
+    font-size: 0.75em; 
+    padding: 0.4em 0.8em; 
+    border-radius: 12px;
+    background-color: transparent;
+    text-align: center;
+    display: inline-block;
+    white-space: nowrap;
 }
 
-/* ★アクティブ時のスタイル★ */
 .nav-item.active {
-    color: #333; /* ★アクティブ時のアイコンの色 (黒) */
+    color: #333;
 }
 .nav-item.active span {
-    background-color: #333; /* ★アクティブ時の文字の背景色 (黒) */
-    color: #fff; /* ★アクティブ時の文字の色 (白) */
+    background-color: #333;
+    color: #fff;
 }
-
-/* ここまでフッター */

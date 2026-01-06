@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/points.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modal_style.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <title>テストWebアプリ</title>
@@ -50,15 +51,18 @@
       </main>
     </div>
 
-    <div id="confirmation-modal" class="modal">
+    <div id="confirmation-modal" class="modal-overlay">
       <div class="modal-content">
-        <span class="close-button">&times;</span>
-        <h2>交換確認</h2>
-        <p>
-          <span id="item-name"></span> を <span id="item-cost"></span>P で交換しますか？
+        <span class="modal-close" id="close-modal-top">&times;</span>
+        <h2 style="font-size: 1.2em; margin-bottom: 10px;">交換の確認</h2>
+        <p style="margin-bottom: 15px; font-size: 0.95em;">
+          <span id="item-name" style="font-weight: bold;"></span><br>
+          <span id="item-cost" class="textBox"></span>P で交換しますか？
         </p>
-        <button id="confirm-yes">はい</button>
-        <button id="confirm-no">キャンセル</button>
+        <div class="modal-actions">
+          <button id="confirm-yes">はい</button>
+          <button id="confirm-no">キャンセル</button>
+        </div>
       </div>
     </div>
 
@@ -68,7 +72,27 @@
 
     {% include 'footer.html' %}
 
+    <script>
+      // トースト通知を表示する共通関数
+      function showToast(message) {
+        const toast = document.getElementById('toast-notification');
+        if (!toast) return; // 要素がなければ何もしない
+        
+        const toastMessage = document.getElementById('toast-message');
+        if (toastMessage) {
+          toastMessage.textContent = message;
+        }
+        
+        toast.classList.remove('toast-hidden');
+        toast.classList.add('toast-visible');
+        
+        // 3秒後に自動で非表示にする
+        setTimeout(() => {
+          toast.classList.remove('toast-visible');
+          toast.classList.add('toast-hidden');
+        }, 3000);
+      }
+    </script>
     <script src="{{ url_for('static', filename='js/points.js') }}"></script>
-
   </body>
 </html>

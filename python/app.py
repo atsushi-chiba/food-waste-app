@@ -133,55 +133,73 @@ def register():
 
 
 @app.route("/input", methods=["GET", "POST"])
+@login_required
 def input():
     today = date.today()
-    # --- POSTリクエスト（フォーム送信時）の処理 ---
+    user_id = session.get("user_id")
+    db = next(get_db())
+    
+    success_message = None
+    error_message = None
+
     if request.method == "POST":
-        user_id = session.get("user_id")
-        db = next(get_db())
-
         try:
-            # 1. フォームデータ取得と検証
             form_data = request.form.to_dict()
-            form_data["user_id"] = user_id
-            validated_data = LossRecordInput(**form_data)
+            
+            # --- フードロス記録の処理 ---
+            food_loss_item_name = form_data.get("item_name")
+            weight_grams = form_data.get("weight_grams")
+            reason_text = form_data.get("reason_text")
 
-            # 2. データベース挿入
-            add_new_loss_record_direct(db, validated_data.model_dump())
+            is_food_loss_input = food_loss_item_name and weight_grams and reason_text
 
-            # ★ 成功時のリダイレクト（ここで関数が終了し、302を返す）★
-            return redirect(url_for("input", success_message="記録が完了しました！"))
+            if is_food_loss_input:
+                loss_data = {
+                    "user_id": user_id,
+                    "item_name": food_loss_item_name,
+                    "weight_grams": weight_grams,
+                    "reason_text": reason_text,
+                }
+                validated_data = LossRecordInput(**loss_data)
+                add_new_loss_record_direct(db, validated_data.model_dump())
+                success_message = "フードロスを記録しました！"
+
+            # --- 余りもの記録の処理 ---
+            leftover_name = form_data.get("leftover_name")
+            if leftover_name:
+                logger.info(f"ユーザーID: {user_id} が余りものとして '{leftover_name}' を入力しました。")
+                if success_message:
+                    success_message += " 余りものも記録しました！"
+                else:
+                    success_message = "余りものを記録しました！"
+
+            # --- 両方未入力のチェック ---
+            if not is_food_loss_input and not leftover_name:
+                error_message = "少なくともどちらか一方のフォームを入力してください。"
 
         except ValidationError as e:
-            db.close()
-            # 失敗時: render_template で処理を終了
-            return render_template(
-                "input.html",
-                today=today,
-                error_message="入力内容に誤りがあります。",
-                details=e.errors(),
-            )
-
+            error_message = "入力内容に誤りがあります。"
+            logger.error(f"バリデーションエラー: {e.errors()}")
         except Exception as e:
             db.rollback()
+            error_message = f"サーバーエラーが発生しました: {str(e)}"
+            logger.exception("サーバーエラー")
+        finally:
             db.close()
-            # サーバーエラー時: render_template で処理を終了
-            return render_template(
-                "input.html",
-                today=today,
-                active_page="input",
-                error_message=f"サーバーエラーが発生しました: {str(e)}",
-            )
 
-    # --- GETリクエスト（画面表示時）の処理 ---
-    # POST処理がスキップされた場合（GETの場合）のみ、このロジックが実行される
-    success_message = request.args.get("success_message")
-
-    logger.debug("--- GETリクエスト /input ページ表示 ---")  # ★デバッグ用
+    # --- GETリクエストまたはPOST処理後のレンダリング ---
+    # URLクエリのメッセージを優先
+    final_success_message = request.args.get("success_message") or success_message
+    final_error_message = request.args.get("error_message") or error_message
 
     return render_template(
-        "input.html", today=today, active_page="input", success_message=success_message
+        "input.html", 
+        today=today, 
+        active_page="input", 
+        success_message=final_success_message,
+        error_message=final_error_message
     )
+
 
 
 @app.route("/log")
@@ -311,59 +329,53 @@ def account():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # POSTリクエスト（フォームが送信された）の場合
-    if request.method == "POST":
+    if request.method == 'POST':
         db = next(get_db())
-        username = request.form.get("username")
-
-        # ★ デバッグ用: POSTされたユーザー名を表示してみる ★
-        logger.debug(f"--- POSTリクエスト受信: ユーザー名 '{username}' ---")
+        username = request.form.get('username')
 
         try:
-            user = get_user_by_username(db, username)
+            user = get_user_by_username(db, username) 
+            if user:
+                session['user_id'] = user.id
+                add_test_loss_records(db, user.id) 
 
-            if user:  # ログイン成功
-                session["user_id"] = user.id
+                # --- モーダル表示判定ロジック ---
+                # 今日すでにモーダルを見たかチェック
+                modal_seen = request.cookies.get('modal_seen_today')
+                
+                # モーダルを表示するかどうかのフラグ
+                show_modal = False
+                if not modal_seen:
+                    show_modal = True
 
-                add_test_loss_records(db, user.id)
+                # レスポンスの作成
+                today = date.today()
+                response = make_response(render_template(
+                    'input.html',
+                    today=today,
+                    active_page='input',
+                    show_modal=show_modal  # テンプレートに渡す
+                ))
 
-                logger.info(f"--- ログイン成功 (user.id: {user.id}) ---")
-                logger.debug(f"現在のセッション: {session}")
-                has_visited = request.cookies.get("first_visit")
-
-                if has_visited:
-                    # Cookieがある場合: 2回目以降のアクセス
-                    # 通常のメインコンテンツページにリダイレクトする
-                    return redirect(url_for("input"))
-                else:
-                    # Cookieがない場合: 初回アクセス
-                    # 初回起動時のみ表示するページ（テンプレート）をレンダリングする
-                    response = make_response(render_template("welcome.html"))
-
-                    # 2. Cookieを設定
-                    # 'first_visit'というキーで値を保存し、有効期限を長めに設定する（例: 1年後）
-                    # max_ageは秒単位 (365日 * 24時間 * 60分 * 60秒)
+                # モーダルを表示する場合、当日中のみ有効なCookieをセット
+                if show_modal:
                     JST = timezone(timedelta(hours=+9))
                     now = datetime.now(JST)
+                    # 翌日の0時0分0秒を計算
                     tomorrow = now.date() + timedelta(days=1)
-                    expiry_time = datetime(
-                        tomorrow.year, tomorrow.month, tomorrow.day, tzinfo=JST
-                    )
+                    expiry_time = datetime(tomorrow.year, tomorrow.month, tomorrow.day, tzinfo=JST)
+                    
                     response.set_cookie(
-                        "first_visit",
-                        "true",
-                        expires=expiry_time,  # 翌日の0時を設定
-                        httponly=True,
+                        'modal_seen_today', 
+                        'true', 
+                        expires=expiry_time, 
+                        httponly=True
                     )
-
-                    # 3. Cookieを設定したレスポンスを返す
-                    return response
-
-            else:  # ログイン失敗
-                logger.info(
-                    f"--- ログイン失敗: ユーザー '{username}' が見つかりません ---"
-                )
-                return render_template("login.html", error="ユーザーが見つかりません。")
+                
+                return response
+                
+            else:
+                return render_template('login.html', error="ユーザーが見つかりません。")
 
         except Exception as e:
             logger.exception(f"--- エラー発生: {str(e)} ---")
@@ -386,10 +398,11 @@ def logout():
 
     # 1. セッションから 'user_id' を削除する
     # .pop(キー, デフォルト値) で、キーが存在しなくてもエラーを防ぐ
-    session.pop("user_id", None)
-
-    response = make_response(redirect(url_for("login")))
-    response.delete_cookie("first_visit")
+    session.pop('user_id', None)
+    
+    response = make_response(redirect(url_for('login')))
+    response.delete_cookie('first_visit')
+    response.delete_cookie('modal_seen_today')
     return response
 
 

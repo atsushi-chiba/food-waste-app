@@ -12,15 +12,49 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0 15px; /* 左右に余白 */
+    padding: 0 15px;
     width: 100%;
-    box-sizing: border-box; /* paddingを含めて幅100%にする */
+    box-sizing: border-box;
+    /* 中央寄せを確実にするため追加 */
+    margin: 0 auto; 
 }
 
-h2 {
-    font-size: 1.2em;
-    color: #333;
+/* ヘッダー全体のレイアウト */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 25px;
+    gap: 12px;
+}
+
+/* アイコンの装飾 */
+.header-icon {
+    font-size: 1.5rem;
+    color: #28a745; /* テーマカラーの緑 */
+    background: #e9f5ff;
+    padding: 10px;
+    border-radius: 50%;
+}
+
+.header-text {
+    text-align: left;
+}
+
+/* タイトル（上書き） */
+h2 {
+    font-size: 1.3em;
+    color: #333;
+    margin: 0; /* 余白をリセット */
+    font-weight: 800;
+}
+
+/* 日付のサブタイトル */
+.header-date {
+    font-size: 0.85em;
+    color: #888;
+    display: block;
+    margin-top: 2px;
 }
 
 /* =======================================
@@ -28,7 +62,9 @@ h2 {
    ======================================= */
 .input-form {
     width: 100%;
-    max-width: 500px; /* PCでも広がりすぎないように */
+    max-width: 500px;
+    /* 親要素内での中央寄せ */
+    margin: 0 auto; 
 }
 
 /* =======================================
@@ -136,4 +172,48 @@ h2 {
 
 .submit-btn:hover {
     background-color: #218838; /* ホバー時に少し濃くする */
+}
+
+/* =======================================
+   またはセパレーター
+   ======================================= */
+
+
+@media (min-width: 768px) {
+    .container, .input-form {
+        /* タブレットでは最大幅を大きくして中央に配置 */
+        max-width: 700px; 
+    }
+
+    .card {
+        padding: 30px; /* カード内の余白を広げて大きく見せる */
+        margin-bottom: 25px;
+    }
+
+    h2 {
+        font-size: 1.8em; /* タイトルを大きく */
+    }
+
+    .form-group label {
+        font-size: 1.1em; /* ラベルを大きく */
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="number"] {
+        padding: 15px; /* 入力欄を大きく */
+        font-size: 1.2em;
+    }
+
+    .radio-options label {
+        padding: 15px 20px; /* ラジオボタンの選択肢を大きく */
+        font-size: 1.1em;
+        /* タブレットでは横に並びやすくする */
+        flex: 1 1 calc(33.33% - 10px); 
+    }
+
+    .submit-btn {
+        padding: 20px; /* 送信ボタンを大きく */
+        font-size: 1.3em;
+        margin-top: 30px;
+    }
 }
