@@ -37,3 +37,17 @@ class LossRecordInput(BaseModel):
         """廃棄理由の前後の空白を削除する"""
         # .strip() を適用した値を返すことで、以降の処理ではクリーンな文字列が使われる
         return v.strip()
+
+
+# アレンジレシピ用のスキーマ
+class LeftoverInput(BaseModel):
+    user_id: int
+    item_name: str
+
+    @field_validator("item_name")
+    @classmethod
+    def item_name_must_not_be_empty(cls, v: str) -> str:
+        """品目名が空白または空文字列でないことを保証する"""
+        if not v.strip():
+            raise ValueError("品目名を空白にすることはできません。")
+        return v.strip()

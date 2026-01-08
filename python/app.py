@@ -20,9 +20,12 @@ from services import (
     get_weekly_stats,
     get_all_loss_reasons,
     add_test_loss_records,
+    register_leftover_item,
+    generate_arrange_recipe_text,
+    get_user_arrange_recipes,
     # ★ get_user_by_id など、services.pyで定義した関数は必要に応じてインポート
 )
-from schemas import LossRecordInput
+from schemas import LossRecordInput, LeftoverInput
 from datetime import datetime, timedelta, timezone, date
 from knowledge import bp as knowledge_bp
 from pydantic import ValidationError  # ★ ValidationErrorをインポート
@@ -627,6 +630,60 @@ def get_weekly_stats_api():
         )
     finally:
         db.close()
+
+
+# === アレンジレシピ API ===
+
+@app.route("/api/register_leftover", methods=["POST"])
+def register_leftover_api():
+    """余った食材を登録し、アレンジレシピを生成・保存する"""
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"message": "認証が必要です。"}), 401
+    
+    data = request.get_json()
+    data["user_id"] = user_id
+    
+    db = next(get_db())
+    try:
+        validated_data = LeftoverInput(**data)
+        
+        # 食材を登録してレシピ生成
+        record_id = register_leftover_item(
+            db, validated_data.user_id, validated_data.item_name
+        )
+        
+        return jsonify({
+            "message": "食材を登録し、アレンジレシピを生成しました。",
+            "id": record_id
+        }), 201
+        
+    except ValidationError as e:
+        return jsonify({
+            "message": "入力データが無効です",
+            "details": e.errors()
+        }), 422
+    except Exception as e:
+        db.rollback()
+        return jsonify({"message": f"登録エラー: {str(e)}"}), 500
+    finally:
+        db.close()
+
+
+@app.route("/api/get_arrange_recipe", methods=["POST"])
+def get_arrange_recipe_api():
+    """食材名からアレンジレシピテキストを生成して返す"""
+    data = request.get_json()
+    item_name = data.get("item_name")
+    
+    if not item_name:
+        return jsonify({"message": "食材名が必要です"}), 400
+        
+    try:
+        recipe_text = generate_arrange_recipe_text(item_name)
+        return jsonify({"recipe": recipe_text}), 200
+    except Exception as e:
+        return jsonify({"message": f"レシピ生成エラー: {str(e)}"}), 500
 
 
 # --- サーバー実行 ---
