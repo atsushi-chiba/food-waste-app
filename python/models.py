@@ -1,6 +1,6 @@
 # models.py
 import datetime
-from sqlalchemy import Column, Integer, String, ForeignKey, REAL
+from sqlalchemy import Column, Integer, String, ForeignKey, REAL, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import declarative_base
 
@@ -56,3 +56,16 @@ class FoodLossRecord(Base):
     # ユーザーと廃棄理由への関係性を定義します
     user = relationship("User", back_populates="records")
     reason = relationship("LossReason", back_populates="records")
+
+
+# アレンジレシピ提案用のテーブル
+class ArrangeSuggest(Base):
+    __tablename__ = 'arrange_suggest'
+    
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    item_name = Column(String(255), nullable=False)
+    arrange_recipe = Column(Text, nullable=True)
+    
+    # ユーザーとの関係性を定義
+    user = relationship("User")
