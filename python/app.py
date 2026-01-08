@@ -170,11 +170,21 @@ def input():
             # --- 余りもの記録の処理 ---
             leftover_name = form_data.get("leftover_name")
             if leftover_name:
-                logger.info(f"ユーザーID: {user_id} が余りものとして '{leftover_name}' を入力しました。")
-                if success_message:
-                    success_message += " 余りものも記録しました！"
-                else:
-                    success_message = "余りものを記録しました！"
+                try:
+                    # 余りものをデータベースに登録し、アレンジレシピを生成
+                    arrange_id = register_leftover_item(db, user_id, leftover_name)
+                    logger.info(f"ユーザーID: {user_id} がアレンジレシピID: {arrange_id} を登録しました")
+                    
+                    if success_message:
+                        success_message += " 余りものを記録し、アレンジレシピを生成しました！"
+                    else:
+                        success_message = "余りものを記録し、アレンジレシピを生成しました！"
+                except Exception as e:
+                    logger.error(f"余りもの登録エラー: {e}")
+                    if success_message:
+                        success_message += " 余りものの記録中にエラーが発生しました。"
+                    else:
+                        error_message = "余りものの記録中にエラーが発生しました。"
 
             # --- 両方未入力のチェック ---
             if not is_food_loss_input and not leftover_name:
