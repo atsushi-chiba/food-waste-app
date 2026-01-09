@@ -1,13 +1,17 @@
-from flask import Blueprint, render_template, current_app  # current_appをインポート
+import logging
+from flask import Blueprint, render_template, current_app,session # current_appをインポート
 import pandas as pd
 import os
 import numpy as np
-import logging
-
+# ---〇変更点---
+from database import get_db
+from models import arrange_suggest
+# ---ここまで---
 logger = logging.getLogger(__name__)
 
 # 1. Blueprintを定義 (変更なし)
-bp = Blueprint("knowledge_bp", __name__, url_prefix="/knowledge")
+bp = Blueprint('knowledge_bp', __name__, url_prefix='/knowledge')
+    
 
 FILE_GROUP_MAP = {
     '豆知識(料理).csv': '料理',
@@ -18,7 +22,6 @@ FILE_GROUP_MAP = {
 
 # 💡 CSVファイルの相対パス (staticフォルダからの相対パス)
 CSV_DIR_RELATIVE_PATH = os.path.join("static", "excel")
-
 
 def load_knowledge_data():
     base_dir = os.path.dirname(current_app.root_path)
@@ -98,14 +101,38 @@ def load_knowledge_data():
 
 
 # 2. ルートを定義 (変更なし)
-@bp.route("/")
+@bp.route('/')
 def knowledge():
     # filter_groups が 'categories' としてテンプレートに渡される
     knowledge_data, filter_groups = load_knowledge_data()
+    
 
-    return render_template(
-        "knowledge.html",
-        knowledge_list=knowledge_data,
-        categories=filter_groups,  # ここに ['料理', '掃除', 'その他'] のリストが入る
-        active_page="knowledge",
-    )
+    # ---〇変更点---
+    # ログインユーザーの保存済みアレンジレシピを取得
+    arrange_list = []
+    if 'user_id' in session:
+        db = next(get_db())
+        try:
+            # レシピが保存されているもの（空でないもの）を取得
+            records = db.query(arrange_suggest).filter(
+                arrange_suggest.user_id == session['user_id'],
+                arrange_suggest.arrange_recipe != None,
+                arrange_suggest.arrange_recipe != ""
+            ).all()
+            
+            for r in records:
+                arrange_list.append({
+                    'item_name': r.item_name,
+                    'recipe': r.arrange_recipe
+                })
+        except Exception as e:
+            print(f"レシピ取得エラー: {e}")
+        finally:
+            db.close()
+    # ---ここまで---
+
+    return render_template('knowledge.html', 
+                            knowledge_list=knowledge_data, 
+                            categories=filter_groups, # ここに ['料理', '掃除', 'その他'] のリストが入る
+                            arrange_list=arrange_list, # 変更: レシピリストをテンプレートに渡す
+                            active_page='knowledge')

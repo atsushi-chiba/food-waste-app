@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 /* static/css/footer.css */
+=======
+>>>>>>> origin/gpt_0107_01
 body {
     padding-bottom: 80px; 
     padding-top: 20px;
@@ -15,7 +18,11 @@ footer a:visited {
     position: fixed;
     bottom: 0;
     left: 0;
+<<<<<<< HEAD
     width: 100%; /* 100vwから100%へ変更 */
+=======
+    width: 100vw; /* ★修正: ビューポート幅いっぱいに広げる */
+>>>>>>> origin/gpt_0107_01
     background-color: white;
     border-top: 1px solid #e0e0e0;
     padding: 0.6em 0;
