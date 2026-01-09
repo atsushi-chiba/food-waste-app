@@ -36,6 +36,13 @@
                     <input type="text" id="dish1" name="item_name" placeholder="例: カレーライス、牛乳" />
                 </div>
                 
+                <!--
+                <div class="form-group">
+                    <label for="waste1">廃棄物</label>
+                    <input type="text" id="waste1" name="waste1" placeholder="例: 人参の皮、食べ残し" />
+                </div>
+                -->
+
                 <div class="form-group">
                     <label for="amount1">廃棄量[g]</label>
                     <input type="number" id="amount1" name="weight_grams" placeholder="例: 100" />
@@ -71,13 +78,56 @@
             <button type="submit" class="submit-btn">送信</button>
 
         </form>
+
+        <div class="separator" style="margin: 30px 0; border-top: 2px dashed #ccc;"></div>
+
+        <h2>残った食品を登録 (アレンジレシピ提案用)</h2>
+        <div class="card">
+            <form id="leftoverForm">
+                <div class="form-group">
+                    <label for="leftoverItem">食品名</label>
+                    <input type="text" id="leftoverItem" name="item_name" placeholder="例: 余ったキャベツ" required />
+                </div>
+                <button type="submit" class="submit-btn" style="background-color: #20b2aa;">登録する</button>
+            </form>
+            <p id="leftoverMsg" style="margin-top:10px; color: green; font-weight:bold;"></p>
+        </div>
+        </div>
     </div>
     
-    {% include 'footer.html' %}
 
-    
-    {% if show_modal %}
-    <script src="{{ url_for('static', filename='js/modal_script.js') }}"></script>
-    {% endif %}
-    <script src="{{ url_for('static', filename='js/input.js') }}"></script>
+    {% include 'footer.html' %}
+<!---aaa-->
+    <script>
+    document.getElementById('leftoverForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const itemName = document.getElementById('leftoverItem').value;
+        const msgEl = document.getElementById('leftoverMsg');
+        
+        try {
+            const response = await fetch('/api/register_leftover', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ item_name: itemName })
+            });
+            const data = await response.json();
+            
+            if (response.ok) {
+                msgEl.textContent = "登録しました！";
+                msgEl.style.color = "green";
+                document.getElementById('leftoverItem').value = ''; // 入力欄をクリア
+                setTimeout(() => msgEl.textContent = '', 3000);
+            } else {
+                msgEl.textContent = "エラー: " + (data.message || "登録に失敗しました");
+                msgEl.style.color = "red";
+            }
+        } catch (err) {
+            console.error(err);
+            msgEl.textContent = "通信エラーが発生しました";
+            msgEl.style.color = "red";
+        }
+    });
+    </script>
+
+</body>
 </html>

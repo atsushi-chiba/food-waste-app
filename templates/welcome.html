@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/points.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}" />
+    <title>テストWebアプリ</title>
+  </head>
+  <body>
+    <header>
+      <h1>昨日の結果</h1>
+    </header>
+
+    <main>
+      <div class="textBox" >100P GET</div>
+      <p>ポイント数はポイントタブから確認できます。</p>
+    </main>
+
+
+    {% include 'footer.html' %}
+    
+    <script src="{{ url_for('static', filename='js/points.js') }}"></script>
+  </body>
+</html>
