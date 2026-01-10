@@ -23,12 +23,60 @@ FILE_GROUP_MAP = {
 CSV_DIR_RELATIVE_PATH = os.path.join("static", "excel")
 
 def load_knowledge_data():
-    """一時的に無効化：pandas依存関係問題対応"""
-    return []
+    """標準ライブラリでCSV読み込み（pandas不使用）"""
+    base_dir = os.path.dirname(current_app.root_path)
+    csv_base_dir = os.path.join(base_dir, CSV_DIR_RELATIVE_PATH)
+
+    all_knowledge_data = []
+
+    for file_name, group in FILE_GROUP_MAP.items():
+        csv_file_path = os.path.join(csv_base_dir, file_name)
+
+        if not os.path.exists(csv_file_path):
+            logger.warning(f"CSVファイルが見つかりません: {csv_file_path}")
+            continue
+
+        try:
+            # 標準ライブラリのcsvモジュールを使用
+            with open(csv_file_path, 'r', encoding='utf-8-sig', newline='') as file:
+                csv_reader = csv.reader(file)
+                for row in csv_reader:
+                    if len(row) >= 2 and row[0] and row[1]:  # 空行や不完全な行をスキップ
+                        knowledge_item = {
+                            "id": len(all_knowledge_data) + 1,
+                            "name": row[0].strip(),
+                            "description": row[1].strip(),
+                            "category": group
+                        }
+                        all_knowledge_data.append(knowledge_item)
+                        
+        except UnicodeDecodeError:
+            # UTF-8で読めない場合はShift_JISで試行
+            try:
+                with open(csv_file_path, 'r', encoding='shift_jis', newline='') as file:
+                    csv_reader = csv.reader(file)
+                    for row in csv_reader:
+                        if len(row) >= 2 and row[0] and row[1]:
+                            knowledge_item = {
+                                "id": len(all_knowledge_data) + 1,
+                                "name": row[0].strip(),
+                                "description": row[1].strip(),
+                                "category": group
+                            }
+                            all_knowledge_data.append(knowledge_item)
+            except Exception as e:
+                logger.error(f"CSVファイル読み込みエラー {csv_file_path}: {e}")
+                continue
+        except Exception as e:
+            logger.error(f"CSVファイル読み込みエラー {csv_file_path}: {e}")
+            continue
+
+    logger.info(f"豆知識データ読み込み完了: {len(all_knowledge_data)}件")
+    return all_knowledge_data
 
 def get_all_knowledge_data():
-    """一時的に無効化：pandas依存関係問題対応"""  
-    return []
+    """豆知識データを取得"""
+    return load_knowledge_data()
     base_dir = os.path.dirname(current_app.root_path)
     csv_base_dir = os.path.join(base_dir, CSV_DIR_RELATIVE_PATH)
 
