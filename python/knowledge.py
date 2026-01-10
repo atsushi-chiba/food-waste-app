@@ -20,7 +20,7 @@ FILE_GROUP_MAP = {
 }
 
 # 💡 CSVファイルの相対パス (staticフォルダからの相対パス)
-CSV_DIR_RELATIVE_PATH = os.path.join("static", "excel")
+CSV_DIR_RELATIVE_PATH = os.path.join("static", "excel")  # 小文字のstaticに修正
 
 def load_knowledge_data():
     """標準ライブラリでCSV読み込み（pandas不使用）"""
