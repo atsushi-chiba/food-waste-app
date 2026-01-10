@@ -56,12 +56,24 @@ def load_knowledge_data():
             with open(csv_file_path, 'r', encoding='utf-8-sig', newline='') as file:
                 csv_reader = csv.reader(file)
                 row_count = 0
-                for row in csv_reader:
+                for row_num, row in enumerate(csv_reader):
+                    if row_num == 0:  # 1行目（ヘッダー行）をスキップ
+                        continue
                     if len(row) >= 2 and row[0] and row[1]:  # 空行や不完全な行をスキップ
+                        # CSVの構造に応じて表示用のcontentを作成
+                        if len(row) >= 3 and row[2]:  # 3列目（詳細説明）がある場合
+                            # 料理・掃除・その他ファイル形式: 廃棄部分, 再利用方法, 詳細説明
+                            content = f"再利用方法: {row[1].strip()}\n\n詳細: {row[2].strip()}"
+                            title = row[0].strip()  # 廃棄部分
+                        else:
+                            # 可食部ファイル形式: 食材, 豆知識
+                            content = row[1].strip()  # 豆知識をそのまま表示
+                            title = row[0].strip()   # 食材名
+                        
                         knowledge_item = {
                             "id": len(all_knowledge_data) + 1,
-                            "title": row[0].strip(),    # nameをtitleに変更
-                            "content": row[1].strip(),  # descriptionをcontentに変更
+                            "title": title,
+                            "content": content,
                             "category": None,           # categoryは常にNone
                             "filter_group": group       # フィルター用のグループ
                         }
@@ -76,12 +88,24 @@ def load_knowledge_data():
                 with open(csv_file_path, 'r', encoding='shift_jis', newline='') as file:
                     csv_reader = csv.reader(file)
                     row_count = 0
-                    for row in csv_reader:
+                    for row_num, row in enumerate(csv_reader):
+                        if row_num == 0:  # 1行目（ヘッダー行）をスキップ
+                            continue
                         if len(row) >= 2 and row[0] and row[1]:
+                            # CSVの構造に応じて表示用のcontentを作成
+                            if len(row) >= 3 and row[2]:  # 3列目（詳細説明）がある場合
+                                # 料理・掃除・その他ファイル形式: 廃棄部分, 再利用方法, 詳細説明
+                                content = f"再利用方法: {row[1].strip()}\n\n詳細: {row[2].strip()}"
+                                title = row[0].strip()  # 廃棄部分
+                            else:
+                                # 可食部ファイル形式: 食材, 豆知識
+                                content = row[1].strip()  # 豆知識をそのまま表示
+                                title = row[0].strip()   # 食材名
+                            
                             knowledge_item = {
                                 "id": len(all_knowledge_data) + 1,
-                                "title": row[0].strip(),    # nameをtitleに変更
-                                "content": row[1].strip(),  # descriptionをcontentに変更
+                                "title": title,
+                                "content": content,
                                 "category": None,           # categoryは常にNone
                                 "filter_group": group       # フィルター用のグループ
                             }
