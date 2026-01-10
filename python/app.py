@@ -163,7 +163,33 @@ def input():
                 }
                 validated_data = LossRecordInput(**loss_data)
                 add_new_loss_record_direct(db, validated_data.model_dump())
-                success_message = "フードロスを記録しました！"
+                
+                # --- 自動ポイント計算を実行 ---
+                try:
+                    logger.info(f"ユーザーID {user_id} の自動ポイント計算を実行中...")
+                    point_result = calculate_weekly_points_logic(db, user_id)
+                    points_awarded = point_result.get("points_added", 0)
+                    
+                    logger.info(f"ポイント計算結果: {point_result}")
+                    
+                    if points_awarded > 0:
+                        success_message = f"フードロスを記録しました！ {points_awarded}ポイントを獲得しました！"
+                        logger.info(f"ユーザーID {user_id} に {points_awarded}ポイントを付与しました")
+                    else:
+                        # 重複実行や条件未満の場合
+                        if point_result.get("message") == "already_awarded":
+                            success_message = "フードロスを記録しました！（今週のポイントは付与済みです）"
+                            logger.info(f"ユーザーID {user_id} は今週既にポイント付与済みです")
+                        else:
+                            success_message = "フードロスを記録しました！"
+                            logger.info(f"ユーザーID {user_id} はポイント付与条件を満たしていません: {point_result.get('message', '不明')}")
+                except Exception as point_error:
+                    # ポイント計算でエラーが発生してもレコード追加は成功として扱う
+                    logger.error(f"ポイント計算エラー: {point_error}")
+                    logger.error(f"ポイント計算エラー詳細: {type(point_error).__name__}: {str(point_error)}")
+                    import traceback
+                    logger.error(f"スタックトレース: {traceback.format_exc()}")
+                    success_message = "フードロスを記録しました！"
 
             # --- 余りもの記録の処理 ---
             leftover_name = form_data.get("leftover_name")
@@ -203,12 +229,16 @@ def input():
     final_success_message = request.args.get("success_message") or success_message
     final_error_message = request.args.get("error_message") or error_message
 
+    # POSTリクエストで成功した場合はモーダルを表示
+    show_modal = success_message is not None
+
     return render_template(
         "input.html", 
         today=today, 
         active_page="input", 
         success_message=final_success_message,
-        error_message=final_error_message
+        error_message=final_error_message,
+        show_modal=show_modal
     )
 
 

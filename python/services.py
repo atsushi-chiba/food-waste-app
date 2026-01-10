@@ -64,8 +64,11 @@ MAX_WEEKLY_POINTS = 200
 def calculate_weekly_points_logic(db: Session, user_id: int) -> Dict[str, Any]:
     # main-test 由来のロジックを採用
     last_week_grams, this_week_grams = get_last_two_weeks(db, user_id)
-    past_4_weeks_total = get_total_grams_for_weeks(db, user_id, weeks_ago=4)
-    baseline = (past_4_weeks_total / 4) if past_4_weeks_total > 0 else 0.0
+    
+    # 初回ユーザー判定のため、今週を除く過去のデータのみでベースラインを計算
+    # 過去4週間のデータ（今週は含まない）
+    past_weeks_only_total = get_total_grams_for_weeks(db, user_id, weeks_ago=5) - get_total_grams_for_weeks(db, user_id, weeks_ago=1)
+    baseline = (past_weeks_only_total / 4) if past_weeks_only_total > 0 else 0.0
 
     # 率計算（分母が0のときは特別扱い）
     if last_week_grams > 0:
@@ -83,6 +86,7 @@ def calculate_weekly_points_logic(db: Session, user_id: int) -> Dict[str, Any]:
     # --- Onboarding（初回）ルール（寛容） ---
     points_to_add = 0
     onboarding_applied = False
+    # 初回判定: 先週のデータがなく、かつ過去4週間のベースラインもない
     if last_week_grams == 0 and baseline == 0:
         # 初週扱い: 今週の記録が一定量を満たす場合は固定ポイントを付与
         if this_week_grams >= MIN_RECORD_WEIGHT:

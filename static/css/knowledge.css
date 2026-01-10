@@ -24,6 +24,52 @@ h1 {
 }
 
 /* --------------------------------------- */
+/* タブナビゲーション */
+/* --------------------------------------- */
+.tab-navigation {
+    display: flex;
+    border-bottom: 2px solid #f0f0f0;
+    margin: 20px -15px 0 -15px; /* mainのpadding分を相殺 */
+    background-color: white;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 15px 20px;
+    border: none;
+    background-color: transparent;
+    color: #666;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.tab-btn.active {
+    color: #28a745;
+    border-bottom-color: #28a745;
+    font-weight: 600;
+}
+
+.tab-btn:hover:not(.active) {
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+/* --------------------------------------- */
+/* タブコンテンツ */
+/* --------------------------------------- */
+.tab-content {
+    display: none;
+    padding-top: 20px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* --------------------------------------- */
 /* 1. フィルタリングボタン */
 /* --------------------------------------- */
 .filter-buttons {

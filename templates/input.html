@@ -12,9 +12,8 @@
     <div id="welcomeModal" class="modal-overlay {% if show_modal %}is-active{% endif %}">
     <div class="modal-content">
         <button class="modal-close" id="closeModalButton">&times;</button>
-        <h1>昨日の結果</h1>
-        <div class="textBox">{{ yesterday_points | default('0P GET') }}</div>
-        <p>ポイント数はポイントタブから確認できます。</p>
+        <h1>記録完了</h1>
+        <div class="textBox">{{ success_message if success_message else "記録しました！" }}</div>
     </div>
 </div>
 
@@ -36,13 +35,6 @@
                     <input type="text" id="dish1" name="item_name" placeholder="例: カレーライス、牛乳" />
                 </div>
                 
-                <!--
-                <div class="form-group">
-                    <label for="waste1">廃棄物</label>
-                    <input type="text" id="waste1" name="waste1" placeholder="例: 人参の皮、食べ残し" />
-                </div>
-                -->
-
                 <div class="form-group">
                     <label for="amount1">廃棄量[g]</label>
                     <input type="number" id="amount1" name="weight_grams" placeholder="例: 100" />
@@ -67,21 +59,13 @@
                 </div>
             </div>
 
-            <div class="card">
-                <h3>余りもの記録</h3>
-                <div class="form-group">
-                    <label for="dish2">余りもの</label>
-                    <input type="text" id="dish2" name="leftover_name" placeholder="例: 人参、玉ねぎ" />
-                </div>
-            </div>
-
             <button type="submit" class="submit-btn">送信</button>
 
         </form>
 
         <div class="separator" style="margin: 30px 0; border-top: 2px dashed #ccc;"></div>
 
-        <h2>残った食品を登録 (アレンジレシピ提案用)</h2>
+        <h2>アレンジレシピを提案</h2>
         <div class="card">
             <form id="leftoverForm">
                 <div class="form-group">
@@ -97,8 +81,26 @@
     
 
     {% include 'footer.html' %}
-<!---aaa-->
     <script>
+    // モーダルを閉じる機能
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('welcomeModal');
+        const closeBtn = document.getElementById('closeModalButton');
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                modal.classList.remove('is-active');
+            });
+        }
+        
+        // モーダル背景をクリックしても閉じる
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.remove('is-active');
+            }
+        });
+    });
+    
     document.getElementById('leftoverForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const itemName = document.getElementById('leftoverItem').value;

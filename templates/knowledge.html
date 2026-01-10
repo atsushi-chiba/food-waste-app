@@ -11,51 +11,60 @@
 <body>
 
     <main>
-        <!-- アレンジレシピセクション -->
-        {% if arrange_list %}
-        <h1>🍳 アレンジレシピ一覧</h1>
-        <div class="textBox" style="margin-bottom: 30px;">
-            <div class="arrange-list-container" id="recipe-list-container">
-                {% for item in arrange_list %}
-                <div class="knowledge-item recipe-item" data-title="{{ item.item_name }}のアレンジ" data-content="{{ item.recipe }}">
-                    <span class="title">{{ item.item_name }}</span> 
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% else %}
-        <div style="text-align: center; padding: 20px; color: #666; margin-bottom: 30px;">
-            <p>📝 アレンジレシピはまだありません</p>
-            <p style="font-size: 0.9em;">「入力」ページから残った食材を登録すると、AIがアレンジレシピを提案します</p>
-        </div>
-        {% endif %}
-        
-        <h1>豆知識</h1>
-        <div class="filter-buttons">
-            <button class="filter-btn active" data-filter="料理">料理</button>
-            <button class="filter-btn" data-filter="掃除">掃除</button>
-            <button class="filter-btn" data-filter="可食部">可食部</button>
-            <button class="filter-btn" data-filter="その他">その他</button>
-            <button class="filter-btn" data-filter="全て">全て表示</button>
+        <!-- タブナビゲーション -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" data-tab="trivia">豆知識</button>
+            <button class="tab-btn" data-tab="recipes">🍳 アレンジレシピ</button>
         </div>
 
-        <div class="search-container">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" id="knowledge-search" placeholder="キーワードで検索（例：卵、皮）" />
-        </div>
-        
-        <div class="textBox">
-            <div class="knowledge-list-container" id="knowledge-list-container-trivia">
-                {% for item in knowledge_list %}
-                <div class="knowledge-item" data-target="detail-{{ item.id }}" data-category="{{ item.filter_group }}">
-                    {% if item.category %}
-                    <span class="title">{{ item.category }}</span> 
-                    {% else %}
-                    <span class="title">{{ item.title }}</span> 
-                    {% endif %}
-                </div>
-                {% endfor %}
+        <!-- 豆知識タブコンテンツ -->
+        <div id="trivia-tab" class="tab-content active">
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="料理">料理</button>
+                <button class="filter-btn" data-filter="掃除">掃除</button>
+                <button class="filter-btn" data-filter="可食部">可食部</button>
+                <button class="filter-btn" data-filter="その他">その他</button>
+                <button class="filter-btn" data-filter="全て">全て表示</button>
             </div>
+
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="knowledge-search" placeholder="キーワードで検索（例：卵、皮）" />
+            </div>
+            
+            <div class="textBox">
+                <div class="knowledge-list-container" id="knowledge-list-container-trivia">
+                    {% for item in knowledge_list %}
+                    <div class="knowledge-item" data-target="detail-{{ item.id }}" data-category="{{ item.filter_group }}">
+                        {% if item.category %}
+                        <span class="title">{{ item.category }}</span> 
+                        {% else %}
+                        <span class="title">{{ item.title }}</span> 
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- アレンジレシピタブコンテンツ -->
+        <div id="recipes-tab" class="tab-content">
+            {% if arrange_list %}
+            <div class="textBox">
+                <div class="arrange-list-container" id="recipe-list-container">
+                    {% for item in arrange_list %}
+                    <div class="knowledge-item recipe-item" data-title="{{ item.item_name }}のアレンジ" data-content="{{ item.recipe }}">
+                        <span class="title">{{ item.item_name }}</span> 
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="textBox" style="text-align: center; padding: 40px 20px; color: #666;">
+                <p style="font-size: 1.2em;">📝 アレンジレシピはまだありません</p>
+                <p style="font-size: 0.9em; margin-top: 15px;">「入力」ページから残った食材を登録すると、<br>AIがアレンジレシピを提案します</p>
+            </div>
+            {% endif %}
         </div>
     </main>
 

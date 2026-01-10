@@ -3,6 +3,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const triviaItems = document.querySelectorAll('#knowledge-list-container-trivia .knowledge-item'); // 豆知識のみ対象
     const filterButtons = document.querySelectorAll('.filter-btn');
     const searchInput = document.getElementById('knowledge-search');
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    // タブ切り替え機能
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetTab = button.getAttribute('data-tab');
+            
+            // すべてのタブボタンからactiveクラスを削除
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            // クリックされたタブボタンにactiveクラスを追加
+            button.classList.add('active');
+            
+            // すべてのタブコンテンツを非表示
+            tabContents.forEach(content => content.classList.remove('active'));
+            // 対応するタブコンテンツを表示
+            const targetContent = document.getElementById(targetTab + '-tab');
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        });
+    });
 
     // フィルタリング処理（豆知識のみ対象）
     const applyFilters = () => {
