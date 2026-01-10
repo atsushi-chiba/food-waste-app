@@ -27,6 +27,19 @@ def load_knowledge_data():
     base_dir = os.path.dirname(current_app.root_path)
     csv_base_dir = os.path.join(base_dir, CSV_DIR_RELATIVE_PATH)
 
+    # デバッグ情報を追加
+    logger.info(f"アプリルートパス: {current_app.root_path}")
+    logger.info(f"ベースディレクトリ: {base_dir}")
+    logger.info(f"CSVディレクトリ: {csv_base_dir}")
+    
+    # ディレクトリの存在確認
+    if os.path.exists(csv_base_dir):
+        logger.info(f"CSVディレクトリが存在します: {csv_base_dir}")
+        files_in_dir = os.listdir(csv_base_dir)
+        logger.info(f"ディレクトリ内のファイル: {files_in_dir}")
+    else:
+        logger.warning(f"CSVディレクトリが見つかりません: {csv_base_dir}")
+
     all_knowledge_data = []
 
     for file_name, group in FILE_GROUP_MAP.items():
@@ -36,10 +49,13 @@ def load_knowledge_data():
             logger.warning(f"CSVファイルが見つかりません: {csv_file_path}")
             continue
 
+        logger.info(f"CSVファイルを処理中: {csv_file_path}")
+        
         try:
             # 標準ライブラリのcsvモジュールを使用
             with open(csv_file_path, 'r', encoding='utf-8-sig', newline='') as file:
                 csv_reader = csv.reader(file)
+                row_count = 0
                 for row in csv_reader:
                     if len(row) >= 2 and row[0] and row[1]:  # 空行や不完全な行をスキップ
                         knowledge_item = {
@@ -49,12 +65,16 @@ def load_knowledge_data():
                             "category": group
                         }
                         all_knowledge_data.append(knowledge_item)
+                        row_count += 1
+                        
+                logger.info(f"ファイル {file_name} から {row_count} 件のデータを読み込みました")
                         
         except UnicodeDecodeError:
             # UTF-8で読めない場合はShift_JISで試行
             try:
                 with open(csv_file_path, 'r', encoding='shift_jis', newline='') as file:
                     csv_reader = csv.reader(file)
+                    row_count = 0
                     for row in csv_reader:
                         if len(row) >= 2 and row[0] and row[1]:
                             knowledge_item = {
@@ -64,6 +84,8 @@ def load_knowledge_data():
                                 "category": group
                             }
                             all_knowledge_data.append(knowledge_item)
+                            row_count += 1
+                    logger.info(f"ファイル {file_name} から {row_count} 件のデータを読み込みました (Shift_JIS)")
             except Exception as e:
                 logger.error(f"CSVファイル読み込みエラー {csv_file_path}: {e}")
                 continue
@@ -75,86 +97,14 @@ def load_knowledge_data():
     filter_groups = list(FILE_GROUP_MAP.values())
     
     logger.info(f"豆知識データ読み込み完了: {len(all_knowledge_data)}件")
+    logger.info(f"フィルターグループ: {filter_groups}")
+    
     return all_knowledge_data, filter_groups  # 2つの値を返す
 
 def get_all_knowledge_data():
     """豆知識データを取得"""
     knowledge_data, _ = load_knowledge_data()  # フィルターグループは無視
     return knowledge_data
-    base_dir = os.path.dirname(current_app.root_path)
-    csv_base_dir = os.path.join(base_dir, CSV_DIR_RELATIVE_PATH)
-
-    all_knowledge_data = []
-
-    for file_name, group in FILE_GROUP_MAP.items():
-        csv_file_path = os.path.join(csv_base_dir, file_name)
-
-        if not os.path.exists(csv_file_path):
-            logger.warning(f"⚠️ 警告: ファイルが見つかりません: {csv_file_path}")
-            continue
-
-        try:
-            # CSV読み込み部分
-            try:
-                df = pd.read_csv(csv_file_path, encoding="utf-8-sig", header=None)
-            except UnicodeDecodeError:
-                df = pd.read_csv(csv_file_path, encoding="shift_jis", header=None)
-
-            df = df.iloc[1:].copy()
-            
-            # テンプレートでの category の有無チェックを有効にするため、まず空文字列をNaNに変換
-            df.replace('', np.nan, inplace=True) 
-            
-            # カラム名は、すべてのファイルでこの順番と内容であることを前提とします
-            
-            if df.shape[1] == 2:
-                # 2列の場合 (例: title, content のみ)
-                df.columns = ['title', 'content'] 
-                # テンプレートで category が False と判定されるように None を設定
-                df['category'] = None 
-            elif df.shape[1] == 3:
-                # 3列の場合 (例: category, title, content の全てがCSVに含まれている)
-                df.columns = ['category', 'title', 'content'] 
-                
-                # 【修正点】fillna(None)の代わりにreplace(np.nan, None)を使用して、
-                # NaNをPythonのNoneに変換する
-                df['category'] = df['category'].replace(np.nan, None)
-            else:
-                # 2列または3列でない場合は警告を出してスキップ
-                print(f"⚠️ 警告: ファイル '{file_name}' の列数が予期しない値です ({df.shape[1]} 列)。2列(title, content)または3列(category, title, content)を想定しています。")
-                continue
-
-            # title, contentがNaN（空欄）の行は削除
-            df.dropna(subset=['title', 'content'], inplace=True) 
-            
-            # 💡 フィルタリンググループを割り当て
-            df["filter_group"] = group
-
-            all_knowledge_data.append(df)
-
-        except Exception as e:
-            logger.exception(
-                f"🚨 ファイル '{file_name}' の処理中にエラーが発生しました。エラー詳細: {e}"
-            )
-            continue
-
-    if not all_knowledge_data:
-        return [], []
-
-    # すべてのデータを結合
-    combined_df = pd.concat(all_knowledge_data, ignore_index=True)
-
-    # 安定した連番IDを割り当て
-    combined_df.reset_index(drop=True, inplace=True)
-    combined_df["id"] = combined_df.index.astype(str)
-
-    # 最終的なリストとユニークなグループ名を取得
-    # Noneを含む可能性があるため、object型にキャスト
-    combined_df['category'] = combined_df['category'].astype(object) 
-    knowledge_list = combined_df[['id', 'category', 'title', 'content', 'filter_group']].to_dict('records')
-    unique_filter_groups = combined_df['filter_group'].dropna().unique().tolist()
-    
-    return knowledge_list, unique_filter_groups
 
 
 # 2. ルートを定義 (変更なし)
