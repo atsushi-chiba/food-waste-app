@@ -71,12 +71,16 @@ def load_knowledge_data():
             logger.error(f"CSVファイル読み込みエラー {csv_file_path}: {e}")
             continue
 
+    # フィルターグループを生成
+    filter_groups = list(FILE_GROUP_MAP.values())
+    
     logger.info(f"豆知識データ読み込み完了: {len(all_knowledge_data)}件")
-    return all_knowledge_data
+    return all_knowledge_data, filter_groups  # 2つの値を返す
 
 def get_all_knowledge_data():
     """豆知識データを取得"""
-    return load_knowledge_data()
+    knowledge_data, _ = load_knowledge_data()  # フィルターグループは無視
+    return knowledge_data
     base_dir = os.path.dirname(current_app.root_path)
     csv_base_dir = os.path.join(base_dir, CSV_DIR_RELATIVE_PATH)
 
