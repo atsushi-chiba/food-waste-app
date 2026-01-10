@@ -71,11 +71,16 @@ def login_required(func):
 
 @app.route("/")
 def index():
+    # デバッグ: 現在のセッション状態をログ出力
+    logger.info(f"ルートページアクセス - セッション内容: {dict(session)}")
+    
     # ログインしていない場合は、ログインページを表示
     if "user_id" not in session:
+        logger.info("user_idがセッションにないため、ログインページを表示")
         return render_template("login.html")
     
     # ログイン済みの場合は入力ページにリダイレクト
+    logger.info(f"user_id={session.get('user_id')}でログイン済み、入力ページにリダイレクト")
     return redirect(url_for("input"))
 
 
@@ -413,15 +418,24 @@ def login():
 
 
 @app.route("/logout")
-@login_required  # ログインしている人だけがサインアウトできるようにする
-def logout():
+def logout():  # ログインチェック削除：ログアウトは誰でもできるようにする
     """サインアウト処理"""
 
-    # 1. セッションから 'user_id' を削除する
-    # .pop(キー, デフォルト値) で、キーが存在しなくてもエラーを防ぐ
-    session.pop('user_id', None)
+    # 1. セッションを完全にクリア
+    session.clear()
+    logger.info("ログアウト: セッションをクリアしました")
     
-    return redirect(url_for('login'))
+    return redirect(url_for('index'))  # ルートページにリダイレクト
+
+
+# デバッグ用エンドポイント（一時的）
+@app.route("/debug-session")
+def debug_session():
+    return jsonify({
+        "session": dict(session),
+        "has_user_id": "user_id" in session,
+        "user_id": session.get("user_id")
+    })
 
 
 # --- ここまで画面ルーティング ---
