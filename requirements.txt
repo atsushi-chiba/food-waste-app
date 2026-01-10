@@ -1,4 +1,4 @@
-# 本番環境用依存関係（2026年1月版）
+# 本番環境用依存関係（軽量版）
 # Web フレームワーク
 Flask==3.1.2
 Werkzeug==3.1.3
@@ -17,10 +17,6 @@ python-dateutil==2.9.0.post0
 
 # 環境変数管理
 python-dotenv==1.2.1
-
-# Excel出力（統計レポート用）
-pandas==2.2.2
-openpyxl==3.1.5
 
 # セキュリティ
 Flask-WTF==1.2.2
