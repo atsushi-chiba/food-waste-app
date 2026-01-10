@@ -1,7 +1,10 @@
+from sqlalchemy import func
 from sqlalchemy.orm import Session
-from models import User, FoodLossRecord, LossReason, ArrangeSuggest
-from datetime import datetime, timedelta, date
-from typing import Dict, Any, List, Optional
+from models import User, FoodLossRecord, LossReason,arrange_suggest
+from schemas import LossRecordInput
+from datetime import datetime, timedelta, date, time
+from typing import Dict, Any, List, Optional, Tuple
+import hashlib
 
 # main-test を優先した実装（競合で main-test のコードを採用）
 from statistics import (
@@ -12,11 +15,13 @@ from statistics import (
 
 # user 関連は既存の `user_service.py` を使う
 from user_service import (
-    get_user_profile as get_user_profile_internal,
-    register_new_user,
     get_user_by_username,
     get_user_by_id,
+    register_new_user,
+    update_user_points as update_user_points_internal,
+    get_user_profile as get_user_profile_internal,
 )
+from chatgpt_module import generate_recipe_from_text
 
 
 def get_all_loss_reasons(db: Session) -> List[str]:
@@ -182,70 +187,30 @@ def add_test_loss_records(db: Session, user_id: int) -> bool:
             item_name="ご飯 (期限切れ)",
             weight_grams=500.0,
             loss_reason_id=reason_expired.id,
-            record_date=today.isoformat(),
-        ),
+            record_date=today.isoformat()
+        )
     ]
 
     db.add_all(records)
     db.commit()
     return True
 
-
-# === アレンジレシピ機能 ===
-
-def generate_arrange_recipe_text(item_name: str) -> str:
-    """
-    食材名からアレンジレシピのテキストを生成する関数
-    現段階では固定テンプレートを使用
-    """
-    return f"""【{item_name}のアレンジレシピ提案】
-
-{item_name}を使った特製リメイク料理はいかがですか？
-
-おすすめ調理法：
-• 細かく刻んでチャーハンに混ぜる
-• 卵とじにして丼ぶりにする  
-• みそ汁の具材として活用
-
-味付けのコツ：
-醤油とみりんで和風に仕上げると、
-どんな食材とも相性良く美味しくいただけます。
-
-食材を無駄なく活用して、新しい味を楽しんでください！"""
-
-
+# ---〇変更点---
+# 残った食材をDBに登録する関数
 def register_leftover_item(db: Session, user_id: int, item_name: str) -> int:
-    """
-    余った食材をデータベースに登録し、アレンジレシピも生成して保存する
-    """
-    # アレンジレシピテキストを生成
-    recipe_text = generate_arrange_recipe_text(item_name)
-    
-    # データベースに保存
-    new_arrange = ArrangeSuggest(
+    new_suggest = arrange_suggest(
         user_id=user_id,
         item_name=item_name,
-        arrange_recipe=recipe_text
+        arrange_recipe= generate_recipe_from_text(item_name)
     )
-    
-    db.add(new_arrange)
+    db.add(new_suggest)
     db.commit()
-    db.refresh(new_arrange)
-    
-    return new_arrange.id
+    db.refresh(new_suggest)
+    return new_suggest.id
 
-
-def get_user_arrange_recipes(db: Session, user_id: int) -> List[Dict[str, Any]]:
-    """
-    ユーザーのアレンジレシピ一覧を取得する
-    """
-    arrangements = db.query(ArrangeSuggest).filter_by(user_id=user_id).all()
-    
-    return [
-        {
-            "id": arr.id,
-            "item_name": arr.item_name,
-            "recipe": arr.arrange_recipe
-        }
-        for arr in arrangements
-    ]
+# アレンジレシピのテキストを生成して返す関数
+def get_arrange_recipe_text(item_name: str) -> str:
+    # 現段階では固定のテンプレートまたは簡易的な応答を返します
+    # 将来的にはここにAI APIなどの呼び出し処理を実装可能です
+    return f"【{item_name}のアレンジレシピ提案】\n\n{item_name}を使った特製リメイク料理はいかがですか？\n細かく刻んでチャーハンに入れたり、卵とじにすると美味しくいただけます。\n味付けは醤油とみりんで和風にするのがおすすめです。"
+# ---ここまで---

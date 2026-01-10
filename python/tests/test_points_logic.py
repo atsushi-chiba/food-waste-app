@@ -1,7 +1,7 @@
 import pytest
 from database import SessionLocal
 from models import User
-import services
+import python.services as services
 import uuid
 
 

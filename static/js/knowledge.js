@@ -1,15 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
     const knowledgeItems = document.querySelectorAll('.knowledge-item');
+    const triviaItems = document.querySelectorAll('#knowledge-list-container-trivia .knowledge-item'); // 豆知識のみ対象
     const filterButtons = document.querySelectorAll('.filter-btn');
     const searchInput = document.getElementById('knowledge-search');
 
-    // フィルタリング処理（変更なし）
+    // フィルタリング処理（豆知識のみ対象）
     const applyFilters = () => {
         const activeBtn = document.querySelector('.filter-btn.active');
         const filterCategory = activeBtn ? activeBtn.getAttribute('data-filter') : '全て';
         const searchTerm = searchInput.value.toLowerCase();
 
-        knowledgeItems.forEach(item => {
+        triviaItems.forEach(item => {
             const itemCategory = item.getAttribute('data-category');
             const itemText = item.textContent.toLowerCase();
             const matchesCategory = (filterCategory === '全て' || itemCategory === filterCategory);
@@ -36,12 +37,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- モーダル制御の修正 ---
     knowledgeItems.forEach(item => {
         item.addEventListener('click', () => {
-            const targetId = item.getAttribute('data-target');
-            const targetModal = document.getElementById(targetId);
-            if (targetModal) {
-                // style.display ではなくクラスを追加する
-                targetModal.classList.add('is-active');
-                document.body.classList.add('modal-open'); 
+            // アレンジレシピの場合
+            if (item.classList.contains('recipe-item')) {
+                const title = item.getAttribute('data-title');
+                const content = item.getAttribute('data-content');
+                
+                if (title && content) {
+                    const recipeModal = document.getElementById('recipe-modal');
+                    const titleElement = document.getElementById('recipe-modal-title');
+                    const contentElement = document.getElementById('recipe-modal-content');
+                    
+                    titleElement.textContent = title;
+                    contentElement.textContent = content;
+                    
+                    recipeModal.classList.add('is-active');
+                    document.body.classList.add('modal-open');
+                }
+            } else {
+                // 豆知識の場合（既存の処理）
+                const targetId = item.getAttribute('data-target');
+                const targetModal = document.getElementById(targetId);
+                if (targetModal) {
+                    targetModal.classList.add('is-active');
+                    document.body.classList.add('modal-open'); 
+                }
             }
         });
     });

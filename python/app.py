@@ -11,6 +11,10 @@ from flask import (
 )
 import logging
 from database import init_db, get_db
+from schemas import LossRecordInput, LeftoverInput #変更点
+from datetime import datetime, timedelta, timezone, date
+from knowledge import bp as knowledge_bp
+from pydantic import ValidationError # ★ ValidationErrorをインポート
 from services import (
     register_new_user,
     add_new_loss_record_direct,
@@ -21,15 +25,10 @@ from services import (
     get_all_loss_reasons,
     add_test_loss_records,
     register_leftover_item,
-    generate_arrange_recipe_text,
-    get_user_arrange_recipes,
+    get_user_profile,
+    get_arrange_recipe_text
     # ★ get_user_by_id など、services.pyで定義した関数は必要に応じてインポート
 )
-from schemas import LossRecordInput, LeftoverInput
-from datetime import datetime, timedelta, timezone, date
-from knowledge import bp as knowledge_bp
-from pydantic import ValidationError  # ★ ValidationErrorをインポート
-from services import get_user_profile
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -46,7 +45,6 @@ init_db()
 
 # --- 画面ルーティング ---
 # ★ ログイン必須のチェック（セッション確認）を追加 ★
-
 
 def login_required(func):
     """ログインしているかチェックするデコレータ"""
@@ -270,11 +268,6 @@ def log():
         next_week=next_week_date.strftime("%Y-%m-%d"),
         active_page="log",
     )
-
-
-# app.py (points ルーティング周辺)
-
-# ... (db, get_db, get_user_profile などのインポートを前提) ...
 
 
 @app.route("/points")
@@ -642,12 +635,11 @@ def get_weekly_stats_api():
         db.close()
 
 
-# === アレンジレシピ API ===
-
+# ---〇変更点---
+# 1. 残った食品を入力するフォームのデータを受け取るAPI
 @app.route("/api/register_leftover", methods=["POST"])
 def register_leftover_api():
-    """余った食材を登録し、アレンジレシピを生成・保存する"""
-    user_id = session.get("user_id")
+    user_id = session.get('user_id')
     if not user_id:
         return jsonify({"message": "認証が必要です。"}), 401
     
@@ -657,32 +649,25 @@ def register_leftover_api():
     db = next(get_db())
     try:
         validated_data = LeftoverInput(**data)
+        #下一行はデバッグ用のprint文　消していい
+        print(f"登録データ: {validated_data}")
+        # サービス層を通してDBに保存
+        record_id = register_leftover_item(db, validated_data.user_id, validated_data.item_name)
         
-        # 食材を登録してレシピ生成
-        record_id = register_leftover_item(
-            db, validated_data.user_id, validated_data.item_name
-        )
-        
-        return jsonify({
-            "message": "食材を登録し、アレンジレシピを生成しました。",
-            "id": record_id
-        }), 201
-        
+        return jsonify({"message": "食材を登録しました", "id": record_id}), 201
     except ValidationError as e:
-        return jsonify({
-            "message": "入力データが無効です",
-            "details": e.errors()
-        }), 422
+        return jsonify({"message": "入力データが無効です", "details": e.errors()}), 422
     except Exception as e:
         db.rollback()
         return jsonify({"message": f"登録エラー: {str(e)}"}), 500
     finally:
         db.close()
 
-
+# 2. アレンジレシピのテキストデータを返すAPI
 @app.route("/api/get_arrange_recipe", methods=["POST"])
 def get_arrange_recipe_api():
-    """食材名からアレンジレシピテキストを生成して返す"""
+    # 本来は登録したID等を受け取るか、食材名を直接受け取る
+    # ここでは食材名(item_name)を受け取ってレシピを返す想定
     data = request.get_json()
     item_name = data.get("item_name")
     
@@ -690,10 +675,11 @@ def get_arrange_recipe_api():
         return jsonify({"message": "食材名が必要です"}), 400
         
     try:
-        recipe_text = generate_arrange_recipe_text(item_name)
+        recipe_text = get_arrange_recipe_text(item_name)
         return jsonify({"recipe": recipe_text}), 200
     except Exception as e:
         return jsonify({"message": f"レシピ生成エラー: {str(e)}"}), 500
+# ---ここまで---
 
 
 # --- サーバー実行 ---

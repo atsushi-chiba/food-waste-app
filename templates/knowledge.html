@@ -11,6 +11,25 @@
 <body>
 
     <main>
+        <!-- アレンジレシピセクション -->
+        {% if arrange_list %}
+        <h1>🍳 アレンジレシピ一覧</h1>
+        <div class="textBox" style="margin-bottom: 30px;">
+            <div class="arrange-list-container" id="recipe-list-container">
+                {% for item in arrange_list %}
+                <div class="knowledge-item recipe-item" data-title="{{ item.item_name }}のアレンジ" data-content="{{ item.recipe }}">
+                    <span class="title">{{ item.item_name }}</span> 
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 20px; color: #666; margin-bottom: 30px;">
+            <p>📝 アレンジレシピはまだありません</p>
+            <p style="font-size: 0.9em;">「入力」ページから残った食材を登録すると、AIがアレンジレシピを提案します</p>
+        </div>
+        {% endif %}
+        
         <h1>豆知識</h1>
         <div class="filter-buttons">
             <button class="filter-btn active" data-filter="料理">料理</button>
@@ -60,6 +79,19 @@
         </div>
     </div>
     {% endfor %}
+
+    <!-- アレンジレシピ用の動的モーダル -->
+    <div id="recipe-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <div class="modal-header" style="background-color: #20b2aa; color: white;">
+                🍳 <span id="recipe-modal-title">アレンジレシピ</span>
+            </div>
+            <div class="modal-body">
+                <pre id="recipe-modal-content" style="white-space: pre-wrap; font-family: inherit; line-height: 1.6; margin: 0;"></pre>
+            </div>
+        </div>
+    </div>
 
     {% include 'footer.html' %}
 

@@ -57,15 +57,14 @@ class FoodLossRecord(Base):
     user = relationship("User", back_populates="records")
     reason = relationship("LossReason", back_populates="records")
 
-
-# アレンジレシピ提案用のテーブル
-class ArrangeSuggest(Base):
+#---〇変更点---
+#残ったものを記録し、アレンジレシピを提案するためのテーブルを追加しました。
+class arrange_suggest(Base):
     __tablename__ = 'arrange_suggest'
-    
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+
+    user_id = Column(Integer, ForeignKey('users.id'))
     item_name = Column(String(255), nullable=False)
+
     arrange_recipe = Column(Text, nullable=True)
-    
-    # ユーザーとの関係性を定義
-    user = relationship("User")
+#---ここまで---
