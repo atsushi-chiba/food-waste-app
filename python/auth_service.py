@@ -1,16 +1,51 @@
 # auth_service.py
-# (今回は使用しませんが、認証関連のロジックを置く場所として作成します)
+# 認証関連のロジックを一元管理
 
-# このファイルは、将来的にはログインロジック、ログアウトロジック、
-# パスワード検証ロジックなどを一元管理する場所になります。
-# 今は空のまま、または以下のダミー関数のみを置きます。
+import hashlib
+import secrets
+from typing import Optional
 
 
-def check_password_hash(password: str, hashed_password: str) -> bool:
+def generate_password_hash(password: str) -> str:
     """
-    パスワードとハッシュ値を比較する（将来の機能）。
+    パスワードをハッシュ化する（SHA256 + ランダムソルト）
+    学校用設定では簡単な実装を使用
     """
-    import hashlib
+    # ランダムソルト生成
+    salt = secrets.token_hex(16)
+    # パスワード + ソルトをハッシュ化
+    password_with_salt = password + salt
+    password_hash = hashlib.sha256(password_with_salt.encode()).hexdigest()
+    # ソルト + ハッシュの形式で保存
+    return salt + ":" + password_hash
 
-    input_hash = hashlib.sha256(password.encode()).hexdigest()
-    return input_hash == hashed_password
+
+def check_password_hash(password: str, stored_hash: str) -> bool:
+    """
+    パスワードとハッシュ値を比較する
+    """
+    try:
+        # 保存されたハッシュからソルトとハッシュを分離
+        if ":" not in stored_hash:
+            # 古い形式のハッシュ（ソルトなし）をサポート
+            input_hash = hashlib.sha256(password.encode()).hexdigest()
+            return input_hash == stored_hash
+        
+        salt, expected_hash = stored_hash.split(":", 1)
+        # 入力パスワード + ソルトでハッシュ作成
+        password_with_salt = password + salt
+        input_hash = hashlib.sha256(password_with_salt.encode()).hexdigest()
+        return input_hash == expected_hash
+    
+    except Exception:
+        return False
+
+
+def verify_login(username: str, password: str, user_password_hash: str) -> bool:
+    """
+    ログイン認証を行う
+    """
+    if not username or not password:
+        return False
+    
+    return check_password_hash(password, user_password_hash)

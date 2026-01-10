@@ -11,6 +11,7 @@ from flask import (
 )
 import logging
 from database import init_db, get_db
+from auth_service import verify_login
 from schemas import LossRecordInput, LeftoverInput #変更点
 from datetime import datetime, timedelta, timezone, date
 from knowledge import bp as knowledge_bp
@@ -380,49 +381,23 @@ def login():
     if request.method == 'POST':
         db = next(get_db())
         username = request.form.get('username')
+        password = request.form.get('password')
 
         try:
             user = get_user_by_username(db, username) 
-            if user:
+            if user and verify_login(username, password, user.password):
                 session['user_id'] = user.id
-
-                # --- モーダル表示判定ロジック ---
-                # 今日すでにモーダルを見たかチェック
-                modal_seen = request.cookies.get('modal_seen_today')
                 
-                # モーダルを表示するかどうかのフラグ
-                show_modal = False
-                if not modal_seen:
-                    show_modal = True
-
-                # レスポンスの作成
+                # シンプルなログイン - input.htmlへ直接リダイレクト
                 today = date.today()
-                response = make_response(render_template(
+                return render_template(
                     'input.html',
                     today=today,
-                    active_page='input',
-                    show_modal=show_modal  # テンプレートに渡す
-                ))
-
-                # モーダルを表示する場合、当日中のみ有効なCookieをセット
-                if show_modal:
-                    JST = timezone(timedelta(hours=+9))
-                    now = datetime.now(JST)
-                    # 翌日の0時0分0秒を計算
-                    tomorrow = now.date() + timedelta(days=1)
-                    expiry_time = datetime(tomorrow.year, tomorrow.month, tomorrow.day, tzinfo=JST)
-                    
-                    response.set_cookie(
-                        'modal_seen_today', 
-                        'true', 
-                        expires=expiry_time, 
-                        httponly=True
-                    )
-                
-                return response
+                    active_page='input'
+                )
                 
             else:
-                return render_template('login.html', error="ユーザーが見つかりません。")
+                return render_template('login.html', error="ユーザー名またはパスワードが正しくありません。")
 
         except Exception as e:
             logger.exception(f"--- エラー発生: {str(e)} ---")
@@ -447,10 +422,7 @@ def logout():
     # .pop(キー, デフォルト値) で、キーが存在しなくてもエラーを防ぐ
     session.pop('user_id', None)
     
-    response = make_response(redirect(url_for('login')))
-    response.delete_cookie('first_visit')
-    response.delete_cookie('modal_seen_today')
-    return response
+    return redirect(url_for('login'))
 
 
 # --- ここまで画面ルーティング ---
