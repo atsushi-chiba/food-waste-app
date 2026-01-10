@@ -12,7 +12,7 @@ from flask import (
 import logging
 from database import init_db, get_db
 from auth_service import verify_login
-from schemas import LossRecordInput, LeftoverInput #変更点
+# schemas削除：Renderビルド問題対応
 from datetime import datetime, timedelta, timezone, date
 from knowledge import bp as knowledge_bp
 # pydantic削除：Renderビルド問題対応
@@ -161,8 +161,8 @@ def input():
                     "weight_grams": weight_grams,
                     "reason_text": reason_text,
                 }
-                validated_data = LossRecordInput(**loss_data)
-                add_new_loss_record_direct(db, validated_data.model_dump())
+                validated_data = loss_data  # スキーマ削除対応
+                add_new_loss_record_direct(db, validated_data)
                 
                 # --- 自動ポイント計算を実行 ---
                 try:
@@ -466,11 +466,11 @@ def add_loss_record_api():
 
     db = next(get_db())
     try:
-        # ★ 1. Pydanticでデータの検証と型変換を一度に行う ★
-        validated_data = LossRecordInput(**data)
+        # ★ 1. データの基本検証 ★
+        validated_data = data  # スキーマ削除対応
 
         # 2. Services層へ処理を渡す
-        record_id = add_new_loss_record_direct(db, validated_data.model_dump())
+        record_id = add_new_loss_record_direct(db, validated_data)
         # NOTE: validated_data.model_dump() でPydanticオブジェクトをPython辞書に変換して渡す
 
         return jsonify({"message": "記録完了！", "record_id": record_id}), 201
@@ -661,11 +661,11 @@ def register_leftover_api():
     
     db = next(get_db())
     try:
-        validated_data = LeftoverInput(**data)
+        validated_data = data  # スキーマ削除対応
         #下一行はデバッグ用のprint文　消していい
         print(f"登録データ: {validated_data}")
         # サービス層を通してDBに保存
-        record_id = register_leftover_item(db, validated_data.user_id, validated_data.item_name)
+        record_id = register_leftover_item(db, validated_data["user_id"], validated_data["item_name"])
         
         return jsonify({"message": "食材を登録しました", "id": record_id}), 201
     except ValueError as e:

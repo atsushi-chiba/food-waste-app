@@ -1,7 +1,7 @@
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from models import User, FoodLossRecord, LossReason,arrange_suggest
-from schemas import LossRecordInput
+# schemas削除：Renderビルド問題対応
 from datetime import datetime, timedelta, date, time
 from typing import Dict, Any, List, Optional, Tuple
 import hashlib
