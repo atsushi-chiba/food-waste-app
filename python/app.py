@@ -15,7 +15,7 @@ from auth_service import verify_login
 from schemas import LossRecordInput, LeftoverInput #変更点
 from datetime import datetime, timedelta, timezone, date
 from knowledge import bp as knowledge_bp
-from pydantic import ValidationError # ★ ValidationErrorをインポート
+# pydantic削除：Renderビルド問題対応
 from services import (
     register_new_user,
     add_new_loss_record_direct,
@@ -227,9 +227,9 @@ def input():
             if not is_food_loss_input and not leftover_name:
                 error_message = "少なくともどちらか一方のフォームを入力してください。"
 
-        except ValidationError as e:
+        except ValueError as e:
             error_message = "入力内容に誤りがあります。"
-            logger.error(f"バリデーションエラー: {e.errors()}")
+            logger.error(f"バリデーションエラー: {str(e)}")
         except Exception as e:
             db.rollback()
             error_message = f"サーバーエラーが発生しました: {str(e)}"
@@ -475,10 +475,10 @@ def add_loss_record_api():
 
         return jsonify({"message": "記録完了！", "record_id": record_id}), 201
 
-    except ValidationError as e:
-        # ★ Pydanticのエラーを捕捉し、422を返す ★
+    except ValueError as e:
+        # ★ バリデーションエラーを捕捉し、422を返す ★
         return (
-            jsonify({"message": "入力データが無効です", "details": e.errors()}),
+            jsonify({"message": "入力データが無効です", "details": str(e)}),
             422,
         )  # 422 Unprocessable Entity
     except Exception as e:
@@ -668,8 +668,8 @@ def register_leftover_api():
         record_id = register_leftover_item(db, validated_data.user_id, validated_data.item_name)
         
         return jsonify({"message": "食材を登録しました", "id": record_id}), 201
-    except ValidationError as e:
-        return jsonify({"message": "入力データが無効です", "details": e.errors()}), 422
+    except ValueError as e:
+        return jsonify({"message": "入力データが無効です", "details": str(e)}), 422
     except Exception as e:
         db.rollback()
         return jsonify({"message": f"登録エラー: {str(e)}"}), 500
