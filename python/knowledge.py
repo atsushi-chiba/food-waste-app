@@ -1,8 +1,7 @@
 import logging
 from flask import Blueprint, render_template, current_app,session # current_appをインポート
-import pandas as pd
 import os
-import numpy as np
+import csv
 # ---〇変更点---
 from database import get_db
 from models import arrange_suggest
@@ -24,6 +23,12 @@ FILE_GROUP_MAP = {
 CSV_DIR_RELATIVE_PATH = os.path.join("static", "excel")
 
 def load_knowledge_data():
+    """一時的に無効化：pandas依存関係問題対応"""
+    return []
+
+def get_all_knowledge_data():
+    """一時的に無効化：pandas依存関係問題対応"""  
+    return []
     base_dir = os.path.dirname(current_app.root_path)
     csv_base_dir = os.path.join(base_dir, CSV_DIR_RELATIVE_PATH)
 
