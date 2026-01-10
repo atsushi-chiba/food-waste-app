@@ -23,7 +23,6 @@ from services import (
     get_user_by_id,
     get_weekly_stats,
     get_all_loss_reasons,
-    add_test_loss_records,
     register_leftover_item,
     get_user_profile,
     get_arrange_recipe_text
@@ -170,11 +169,24 @@ def input():
                     point_result = calculate_weekly_points_logic(db, user_id)
                     points_awarded = point_result.get("points_added", 0)
                     
-                    logger.info(f"ポイント計算結果: {point_result}")
+                    # 詳細ログ出力（改良版ベースライン計算対応）
+                    details = point_result.get("calculation_details", {})
+                    logger.info(
+                        f"USER {details.get('user_id', user_id)}: "
+                        f"Last week: {details.get('last_week_grams', 0)}g, "
+                        f"This week: {details.get('this_week_grams', 0)}g, "
+                        f"Baseline: {details.get('baseline_grams', 0):.1f}g "
+                        f"({details.get('baseline_weeks_count', 0)}週のデータ), "
+                        f"Last week rate: {point_result.get('rate_last_week', 0):.1f}%, "
+                        f"Baseline rate: {point_result.get('rate_baseline', 0):.1f}%, "
+                        f"Final rate: {point_result.get('final_reduction_rate', 0):.1f}% "
+                        f"({details.get('comparison_method', 'unknown')})"
+                    )
                     
                     if points_awarded > 0:
-                        success_message = f"フードロスを記録しました！ {points_awarded}ポイントを獲得しました！"
-                        logger.info(f"ユーザーID {user_id} に {points_awarded}ポイントを付与しました")
+                        onboarding = " (初回ボーナス)" if point_result.get("onboarding_applied", False) else ""
+                        success_message = f"フードロスを記録しました！ {points_awarded}ポイントを獲得しました{onboarding}！"
+                        logger.info(f"ユーザーID {user_id} に {points_awarded}ポイントを付与しました{onboarding}")
                     else:
                         # 重複実行や条件未満の場合
                         if point_result.get("message") == "already_awarded":
@@ -373,7 +385,6 @@ def login():
             user = get_user_by_username(db, username) 
             if user:
                 session['user_id'] = user.id
-                add_test_loss_records(db, user.id) 
 
                 # --- モーダル表示判定ロジック ---
                 # 今日すでにモーダルを見たかチェック

@@ -61,6 +61,7 @@ def register_new_user(db: Session, username: str, email: str, password: str) -> 
         email=email,
         password=hashed_password,
         total_points=0,
+        last_points_awarded_week_start=None,  # 明示的にNoneを設定
         # address, family_size などがあればここに追加
     )
 

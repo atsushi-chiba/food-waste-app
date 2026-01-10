@@ -222,30 +222,26 @@ def get_last_two_weeks(db: Session, user_id: int) -> tuple[float, float]:
     last_monday = this_monday - timedelta(weeks=1)
     last_sunday = this_sunday - timedelta(weeks=1)
 
-    # データベースのレコード日付は文字列（ISO 8601）
-    last_monday_str = last_monday.isoformat()
-    last_sunday_str = last_sunday.isoformat()
-    this_monday_str = this_monday.isoformat()
-    this_sunday_str = this_sunday.isoformat()
-
+    # record_dateの型を統一して比較（datetimeとstrの両方に対応）
     # 先週の合計重量を取得
-    last_week_grams = (
-        db.query(func.sum(FoodLossRecord.weight_grams))
-        .filter(FoodLossRecord.user_id == user_id)
-        .filter(FoodLossRecord.record_date >= last_monday_str)
-        .filter(FoodLossRecord.record_date <= last_sunday_str)
-        .scalar()
-        or 0.0
-    )
-
-    # 今週の合計重量を取得
-    this_week_grams = (
-        db.query(func.sum(FoodLossRecord.weight_grams))
-        .filter(FoodLossRecord.user_id == user_id)
-        .filter(FoodLossRecord.record_date >= this_monday_str)
-        .filter(FoodLossRecord.record_date <= this_sunday_str)
-        .scalar()
-        or 0.0
-    )
+    last_week_records = db.query(FoodLossRecord).filter(
+        FoodLossRecord.user_id == user_id
+    ).all()
+    
+    last_week_grams = 0.0
+    this_week_grams = 0.0
+    
+    for record in last_week_records:
+        # record_dateをdatetimeに変換
+        if isinstance(record.record_date, str):
+            record_dt = datetime.fromisoformat(record.record_date.replace('T', ' '))
+        else:
+            record_dt = record.record_date
+            
+        # 週の境界をチェック
+        if last_monday <= record_dt <= last_sunday:
+            last_week_grams += record.weight_grams
+        elif this_monday <= record_dt <= this_sunday:
+            this_week_grams += record.weight_grams
 
     return last_week_grams, this_week_grams
