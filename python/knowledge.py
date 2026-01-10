@@ -1,5 +1,5 @@
 import logging
-from flask import Blueprint, render_template, current_app,session # current_appをインポート
+from flask import Blueprint, render_template, current_app, session, redirect, url_for # redirectとurl_forをインポート
 import os
 import csv
 # ---〇変更点---
@@ -7,6 +7,16 @@ from database import get_db
 from models import arrange_suggest
 # ---ここまで---
 logger = logging.getLogger(__name__)
+
+# ログインチェック用のデコレータを追加
+def login_required(func):
+    """ログインしているかチェックするデコレータ"""
+    def wrapper(*args, **kwargs):
+        if "user_id" not in session:
+            return redirect(url_for("login"))  # ログインページにリダイレクト
+        return func(*args, **kwargs)
+    wrapper.__name__ = func.__name__
+    return wrapper
 
 # 1. Blueprintを定義 (変更なし)
 bp = Blueprint('knowledge_bp', __name__, url_prefix='/knowledge')
@@ -135,6 +145,7 @@ def get_all_knowledge_data():
 
 # 2. ルートを定義 (変更なし)
 @bp.route('/')
+@login_required
 def knowledge():
     # filter_groups が 'categories' としてテンプレートに渡される
     knowledge_data, filter_groups = load_knowledge_data()

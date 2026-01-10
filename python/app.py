@@ -71,13 +71,12 @@ def login_required(func):
 
 @app.route("/")
 def index():
-    # もしセッションに 'user_id' が存在する場合 (＝ログイン済みの場合)
-    if "user_id" in session:
-        # ログインページではなく、入力ページにリダイレクトする
-        return redirect(url_for("input"))
-
-    # ログインしていない場合のみ、login.html を表示する
-    return render_template("login.html")
+    # ログインしていない場合は、ログインページを表示
+    if "user_id" not in session:
+        return render_template("login.html")
+    
+    # ログイン済みの場合は入力ページにリダイレクト
+    return redirect(url_for("input"))
 
 
 @app.route("/register", methods=["GET", "POST"])
