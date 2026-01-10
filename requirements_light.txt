@@ -1,0 +1,25 @@
+# 本番環境用依存関係（軽量版）
+# Web フレームワーク
+Flask==3.1.2
+Werkzeug==3.1.3
+
+# データベース
+SQLAlchemy==2.0.43
+
+# HTTP クライアント
+requests==2.32.5
+
+# OpenAI API
+openai==0.28.0
+
+# 日付・時刻処理
+python-dateutil==2.9.0.post0
+
+# 環境変数管理
+python-dotenv==1.2.1
+
+# セキュリティ
+Flask-WTF==1.2.2
+
+# 本番Webサーバー
+gunicorn==22.0.0
