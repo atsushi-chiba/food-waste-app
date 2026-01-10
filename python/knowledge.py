@@ -60,9 +60,10 @@ def load_knowledge_data():
                     if len(row) >= 2 and row[0] and row[1]:  # 空行や不完全な行をスキップ
                         knowledge_item = {
                             "id": len(all_knowledge_data) + 1,
-                            "name": row[0].strip(),
-                            "description": row[1].strip(),
-                            "category": group
+                            "title": row[0].strip(),    # nameをtitleに変更
+                            "content": row[1].strip(),  # descriptionをcontentに変更
+                            "category": None,           # categoryは常にNone
+                            "filter_group": group       # フィルター用のグループ
                         }
                         all_knowledge_data.append(knowledge_item)
                         row_count += 1
@@ -79,9 +80,10 @@ def load_knowledge_data():
                         if len(row) >= 2 and row[0] and row[1]:
                             knowledge_item = {
                                 "id": len(all_knowledge_data) + 1,
-                                "name": row[0].strip(),
-                                "description": row[1].strip(),
-                                "category": group
+                                "title": row[0].strip(),    # nameをtitleに変更
+                                "content": row[1].strip(),  # descriptionをcontentに変更
+                                "category": None,           # categoryは常にNone
+                                "filter_group": group       # フィルター用のグループ
                             }
                             all_knowledge_data.append(knowledge_item)
                             row_count += 1
