@@ -1,17 +1,35 @@
-/.venv/
+# 仮想環境
+.venv/
+venv/
+
+# Python関連
 __pycache__/
 *.pyc
-db/*.db
+*.pyo
+*.egg-info/
 .pytest_cache/
-/.mypy_cache/
-/.vscode/
-.env
-venv/# データベースファイルは除外
-db/
-.venv/
-__pycache__/
+.mypy_cache/
 
-# 仮想環境とデータベースファイルを除外
-.venv/
+# データベース
+db/*.db
 db/
-__pycache__/
+
+# ログファイル
+logs/
+*.log
+python/logs/
+
+# バックアップファイル
+backups/
+*.bak
+
+# 環境設定（本物は除外、サンプルのみ追跡）
+.env
+
+# IDE関連
+.vscode/
+.idea/
+
+# 一時ファイル
+*.tmp
+*.temp
