@@ -100,6 +100,9 @@ def register():
                 "register.html", error="すべての項目を入力してください。"
             )
 
+        if len(password) < 8:
+            return render_template("register.html", error="パスワードは8文字以上で入力してください。")
+
         if password != password_confirm:
             return render_template("register.html", error="パスワードが一致しません。")
 
@@ -151,7 +154,22 @@ def input():
             weight_grams = form_data.get("weight_grams")
             reason_text = form_data.get("reason_text")
 
-            is_food_loss_input = food_loss_item_name and weight_grams and reason_text
+            # 必須項目のバリデーション
+            missing_fields = []
+            if not food_loss_item_name or food_loss_item_name.strip() == "":
+                missing_fields.append("料理名 / 廣棄品目名")
+            if not weight_grams or weight_grams.strip() == "":
+                missing_fields.append("廣棄量")
+            elif not weight_grams.isdigit() or int(weight_grams) <= 0:
+                missing_fields.append("廣棄量（正の数値を入力してください）")
+            if not reason_text:
+                missing_fields.append("廣棄理由")
+
+            if missing_fields:
+                error_message = f"以下の項目を入力してください： {', '.join(missing_fields)}"
+                is_food_loss_input = False
+            else:
+                is_food_loss_input = True
 
             if is_food_loss_input:
                 loss_data = {
@@ -433,6 +451,9 @@ def register_user_api():
 
     if not all([username, email, password]):
         return jsonify({"message": "すべての情報が必要です。"}), 400
+    
+    if len(password) < 8:
+        return jsonify({"message": "パスワードは8文字以上で入力してください。"}), 400
 
     db = next(get_db())
     try:

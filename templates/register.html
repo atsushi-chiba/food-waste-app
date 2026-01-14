@@ -16,17 +16,17 @@
             <p class="error-message">{{ error }}</p>
             {% endif %}
 
-            <input type="email" id="email" name="email" placeholder="Email" />
+            <input type="email" id="email" name="email" placeholder="Email" required />
 
-            <input type="text" id="username" name="username" placeholder="Username" />
+            <input type="text" id="username" name="username" placeholder="Username" required />
 
-            <input type="password" id="password" name="password" placeholder="Password" required/>
+            <input type="password" id="password" name="password" placeholder="Password (8文字以上)" minlength="8" required/>
 
-            <input type="password" id="password_confirm" name="password_confirm" placeholder="Password Again" required/>
+            <input type="password" id="password_confirm" name="password_confirm" placeholder="Password Again (8文字以上)" minlength="8" required/>
 
-            <input type="number" id="members" name="members" placeholder="世帯人数" />
+            <input type="number" id="members" name="members" placeholder="世帯人数（任意）" min="1" />
 
-            <input type="text" id="address" name="address" placeholder="住所" />
+            <input type="text" id="address" name="address" placeholder="住所（任意）" />
             
             <button type="submit" id="create-account-button">アカウント作成</button>
 

@@ -45,6 +45,10 @@ def register_new_user(db: Session, username: str, email: str, password: str) -> 
     """
     新しいユーザーをデータベースに登録する。
     """
+    # パスワード長さのバリデーション
+    if len(password) < 8:
+        raise ValueError("パスワードは8文字以上で入力してください。")
+    
     # ユーザー名とメールアドレスの重複チェック
     if (
         db.query(User)

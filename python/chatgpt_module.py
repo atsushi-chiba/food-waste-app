@@ -32,7 +32,7 @@ def generate_recipe_from_text(user_text: str) -> str:
         raise ValueError("入力テキストが空です")
 
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_text}

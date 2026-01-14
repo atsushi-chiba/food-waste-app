@@ -204,6 +204,16 @@ def calculate_weekly_points_logic(db: Session, user_id: int) -> Dict[str, Any]:
         "comparison_method": comparison_method if 'comparison_method' in locals() else "unknown"
     }
 
+    # --- 毎日最初の入力は必ず1ポイント付与 ---
+    today_str = datetime.now().strftime('%Y-%m-%d')
+    if user.last_points_awarded_date != today_str:
+        user.total_points += 1
+        user.last_points_awarded_date = today_str
+        db.commit()
+        # 既存ロジックのポイントと合算して返す
+        calculation_details['daily_bonus'] = 1
+        points_to_add += 1
+
     return {
         "points_added": points_to_add,
         "final_reduction_rate": round(final_reduction_rate * 100, 2),

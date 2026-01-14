@@ -52,9 +52,12 @@
             {% if arrange_list %}
             <div class="textBox">
                 <div class="arrange-list-container" id="recipe-list-container">
-                    {% for item in arrange_list %}
+                    {% for item in arrange_list|reverse %}
                     <div class="knowledge-item recipe-item" data-title="{{ item.item_name }}のアレンジ" data-content="{{ item.recipe }}">
-                        <span class="title">{{ item.item_name }}</span> 
+                        <span class="title">{{ item.item_name }}</span>
+                        {% if loop.first %}
+                        <span class="new-label" style="background:#ff5252;color:#fff;font-size:0.8em;padding:2px 8px;border-radius:12px;margin-left:8px;vertical-align:middle;">new</span>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>

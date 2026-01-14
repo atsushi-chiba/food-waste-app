@@ -54,6 +54,15 @@ def init_db():
             )
             logger.info("Added column users.last_points_awarded_week_start")
 
+    if "last_points_awarded_date" not in columns:
+        with engine.connect() as conn:
+            conn.execute(
+                text(
+                    "ALTER TABLE users ADD COLUMN last_points_awarded_date VARCHAR(10)"
+                )
+            )
+            logger.info("Added column users.last_points_awarded_date")
+
     db = SessionLocal()
     try:
         # 1. 初期廃棄理由の投入 (既存ロジック)
@@ -71,16 +80,6 @@ def init_db():
             print("Loss reasons added.")
 
         # 2. テストユーザーの投入 (追加ロジック)
-        if not db.query(User).filter_by(username="a").first():
-            hashed_password = hashlib.sha256("testpass".encode()).hexdigest() #
-            test_user = User(
-                username="a", 
-                password=hashed_password, 
-                email="a@a"
-            )
-            db.add(test_user)
-            db.commit()
-            print("Test user 'a' created automatically.")
             
     except Exception as e:
         print(f"Error during init_db: {e}")
