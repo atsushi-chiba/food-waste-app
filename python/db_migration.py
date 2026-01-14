@@ -138,7 +138,7 @@ def backup_db():
         os.makedirs('backups', exist_ok=True)
         
         # 現在のデータベースファイルをバックアップ
-        db_path = os.getenv('DATABASE_URL', 'sqlite:///db/food_loss.db').replace('sqlite:///', '')
+        db_path = "postgresql://postgres:_g.,hQj&VT%54+c@db.zyqkkboldwwoumdnsohh.supabase.co:5432/postgres"
         
         if os.path.exists(db_path):
             shutil.copy2(db_path, backup_path)

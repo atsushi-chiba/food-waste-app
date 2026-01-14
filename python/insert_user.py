@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 # os.path.dirname(os.path.dirname(__file__)) で一つ上の親ディレクトリ (例: C:/.../social-implementation) に移動
 PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
 DATABASE_PATH = os.path.join(PROJECT_ROOT, "db", "food_loss.db")
-DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
+DATABASE_URL = "postgresql://postgres:_g.,hQj&VT%54+c@db.zyqkkboldwwoumdnsohh.supabase.co:5432/postgres"
 
 # データベースエンジンとセッションを作成
 engine = create_engine(DATABASE_URL)
