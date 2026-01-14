@@ -11,11 +11,8 @@ import hashlib
 # データベースファイルへのパスを定義
 # os.path.dirname(__file__) は現在のファイルのディレクトリパス (例: C:/.../social-implementation/python)
 # os.path.dirname(os.path.dirname(__file__)) で一つ上の親ディレクトリに移動
-PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
-DATABASE_PATH = os.path.join(PROJECT_ROOT, "db", "food_loss.db")
-DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
-
-# データベースエンジンを作成
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///../db/food_loss.db")
+# DATABASE_URLが環境変数にあればSupabase/PostgreSQLを使用、なければローカルSQLite
 engine = create_engine(DATABASE_URL)
 
 # データベースセッションを作成
@@ -31,37 +28,9 @@ def get_db():
 
 
 def init_db():
-    # データベースディレクトリの作成
-    db_dir = os.path.dirname(DATABASE_PATH)
-    if not os.path.exists(db_dir):
-        os.makedirs(db_dir)
-
+    # PostgreSQL/Supabaseの場合はディレクトリ作成不要
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created successfully!")
-
-    # --- 既存 DB に新しい列がなければ追加（軽いマイグレーション） ---
-    # SQLite では ALTER TABLE ADD COLUMN が使えるため、存在確認してから追加する
-    from sqlalchemy import inspect, text
-
-    inspector = inspect(engine)
-    columns = [col["name"] for col in inspector.get_columns("users")]
-    if "last_points_awarded_week_start" not in columns:
-        with engine.connect() as conn:
-            conn.execute(
-                text(
-                    "ALTER TABLE users ADD COLUMN last_points_awarded_week_start VARCHAR(10)"
-                )
-            )
-            logger.info("Added column users.last_points_awarded_week_start")
-
-    if "last_points_awarded_date" not in columns:
-        with engine.connect() as conn:
-            conn.execute(
-                text(
-                    "ALTER TABLE users ADD COLUMN last_points_awarded_date VARCHAR(10)"
-                )
-            )
-            logger.info("Added column users.last_points_awarded_date")
 
     db = SessionLocal()
     try:
@@ -73,14 +42,11 @@ def init_db():
                 LossReason(reason_text="料理後の廃棄"),
                 LossReason(reason_text="調理失敗"),
                 LossReason(reason_text="その他"),
-                LossReason(reason_text="食べ残し") # insert_user.pyで使われていたので追加を推奨
+                LossReason(reason_text="食べ残し")
             ]
             db.add_all(reasons)
             db.commit()
             print("Loss reasons added.")
-
-        # 2. テストユーザーの投入 (追加ロジック)
-            
     except Exception as e:
         print(f"Error during init_db: {e}")
         db.rollback()

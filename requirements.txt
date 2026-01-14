@@ -36,8 +36,8 @@ WTForms==3.2.1
 click==8.3.0
 blinker==1.9.0
 
-# 本番環境推奨（PostgreSQL）- オプション
-# psycopg2-binary==2.9.9
+# 本番環境推奨（PostgreSQL）
+psycopg2-binary==2.9.9
 
 # 監視・デバッグ用（開発・テスト用）
 # pytest==9.0.2
