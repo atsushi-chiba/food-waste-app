@@ -2,6 +2,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base, User, LossReason, FoodLossRecord
+from sqlalchemy.pool import NullPool
 import os
 import logging
 
@@ -13,7 +14,7 @@ import hashlib
 # os.path.dirname(os.path.dirname(__file__)) で一つ上の親ディレクトリに移動
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///../db/food_loss.db")
 # DATABASE_URLが環境変数にあればSupabase/PostgreSQLを使用、なければローカルSQLite
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, poolclass=NullPool)
 
 # データベースセッションを作成
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
