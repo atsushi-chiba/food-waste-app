@@ -12,8 +12,16 @@ import hashlib
 # データベースファイルへのパスを定義
 # os.path.dirname(__file__) は現在のファイルのディレクトリパス (例: C:/.../social-implementation/python)
 # os.path.dirname(os.path.dirname(__file__)) で一つ上の親ディレクトリに移動
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///../db/food_loss.db")
+# DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///../db/food_loss.db")
 # DATABASE_URLが環境変数にあればSupabase/PostgreSQLを使用、なければローカルSQLite
+# engine = create_engine(DATABASE_URL, poolclass=NullPool)
+USER = os.getenv("db_user")
+PASSWORD = os.getenv("db_password")
+HOST = os.getenv("db_host")
+PORT = os.getenv("db_port")
+DBNAME = os.getenv("db_dbname")
+
+DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
 engine = create_engine(DATABASE_URL, poolclass=NullPool)
 
 # データベースセッションを作成
